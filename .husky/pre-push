@@ -1,0 +1,50 @@
+#!/usr/bin/env sh
+
+run_script() {
+  if [ -f pnpm-lock.yaml ]; then
+    pnpm run "$1"
+  elif [ -f yarn.lock ]; then
+    yarn "$1"
+  elif [ -f bun.lockb ] || [ -f bun.lock ]; then
+    bun run "$1"
+  else
+    npm run "$1"
+  fi
+}
+
+has_script() {
+  node -e "const pkg = require('./package.json'); process.exit(pkg.scripts && pkg.scripts['$1'] ? 0 : 1)"
+}
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+  echo "🔒 Don't push to $branch."
+  exit 1
+fi
+
+echo "🧹 DX-FLOW: Running lint fix..."
+if has_script lint:fix; then
+  run_script lint:fix
+  status=$?
+  if [ "$status" -ne 0 ]; then
+    exit "$status"
+  fi
+fi
+
+echo "🧐 DX-FLOW: Running tests..."
+if ! has_script test:run; then
+  exit 0
+fi
+
+run_script test:run
+status=$?
+
+if [ "$branch" = "develop" ] && [ "$status" -ne 0 ]; then
+  echo "☠️ Tests failed. Push to develop aborted."
+  exit 1
+fi
+
+if [ "$status" -ne 0 ]; then
+  echo "⚠️ Tests failed, but allowing push on $branch."
+fi

@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+
+echo "📝 Validating commit message..."
+
+npx --no -- commitlint --edit "$1"
+status=$?
+
+if [ "$status" -eq 0 ]; then
+  echo "✅ Commit message follows conventional standards."
+else
+  echo "❌ Invalid commit format!"
+  echo "💡 Use: <type>(<scope>): tell why you changed that"
+  exit "$status"
+fi

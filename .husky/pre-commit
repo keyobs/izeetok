@@ -1,0 +1,50 @@
+#!/usr/bin/env sh
+
+run_exec() {
+  if [ -f pnpm-lock.yaml ]; then
+    pnpm exec "$@"
+  elif [ -f yarn.lock ]; then
+    yarn "$@"
+  elif [ -f bun.lockb ] || [ -f bun.lock ]; then
+    bunx "$@"
+  else
+    npx "$@"
+  fi
+}
+
+echo "🚦 Pre-commit sanity check..."
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+if [ "$branch" = "main" ] || [ "$branch" = "master" ]; then
+  echo "🔒 Don't commit to $branch."
+  exit 1
+fi
+
+staged_files="$(git diff --cached --name-only)"
+
+if printf "%s\n" "$staged_files" | grep -E '^\.env(\.|$)' >/dev/null; then
+  echo "❌ Error: You are attempting to commit a .env file!"
+  exit 1
+fi
+
+echo "🧹 Linting & formatting staged files..."
+run_exec lint-staged
+status=$?
+if [ "$status" -ne 0 ]; then
+  exit "$status"
+fi
+
+staged_ts="$(printf "%s\n" "$staged_files" | grep -E '\.(ts|tsx)$' || true)"
+if [ -n "$staged_ts" ]; then
+  echo "🎓 Type checking..."
+  run_exec tsc --noEmit --pretty false
+  status=$?
+  if [ "$status" -ne 0 ]; then
+    exit "$status"
+  fi
+else
+  echo "ℹ️ No TS files staged for type checking."
+fi
+
+echo "🎉 Pre-commit checks passed."
