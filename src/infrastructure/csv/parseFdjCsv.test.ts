@@ -1,11 +1,9 @@
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseFdjCsv } from './parseFdjCsv.ts';
 
-const REAL_CSV_PATH = fileURLToPath(
-  new URL('../../../public/results/euromillions_202002.csv', import.meta.url),
-);
+const REAL_CSV_PATH = resolve(process.cwd(), 'public/results/euromillions_202002.csv');
 
 describe('parseFdjCsv', () => {
   it('parses a minimal FDJ-shaped CSV into Draws', () => {
