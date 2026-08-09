@@ -11,6 +11,8 @@
     "prepare": "husky",
     "lint:fix": "oxlint --fix",
     "check": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run",
     "release:patch": "dx-flow release patch",
     "release:minor": "dx-flow release minor",
     "release:major": "dx-flow release major",
@@ -19,8 +21,13 @@
     "qa:reset": "dx-flow qa:reset"
   },
   "dependencies": {
+    "@react-three/drei": "^10.7.8",
+    "@react-three/fiber": "^9.7.0",
+    "ml-pca": "^4.1.1",
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "three": "^0.185.1",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@commitlint/cli": "^21.2.1",
@@ -29,12 +36,14 @@
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "@types/three": "^0.185.4",
     "@vitejs/plugin-react": "^6.0.4",
     "husky": "^9.1.7",
     "lint-staged": "^17.3.0",
     "oxlint": "^1.75.0",
     "typescript": "~6.0.2",
-    "vite": "^8.2.0"
+    "vite": "^8.2.0",
+    "vitest": "^4.1.10"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
