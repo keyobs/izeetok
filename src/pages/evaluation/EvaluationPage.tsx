@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import type { ChangeEvent } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import type { ChangeEvent, KeyboardEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Draw } from '../../domain/draw/Draw.ts';
 import type { VariationKind } from '../../application/generateVariations.ts';
@@ -29,27 +29,23 @@ const VARIATION_LABELS: Record<VariationKind, string> = {
   'anti-share': 'Anti-partage',
 };
 
+const onlyDigits = (value: string): string => value.replace(/\D/g, '').slice(0, 2);
+
 const EvaluationPage = () => {
   const [numberInputs, setNumberInputs] = useState<string[]>(EMPTY_NUMBERS);
   const [starInputs, setStarInputs] = useState<string[]>(EMPTY_STARS);
   const [grid, setGrid] = useState<Grid | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  const numberFieldRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const starFieldRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const evaluateButtonRef = useRef<HTMLButtonElement | null>(null);
+
   const historyQuery = useQuery({
     queryKey: ['draws', 'all'],
     queryFn: () => drawRepository.getAll(),
   });
   const history = historyQuery.data ?? EMPTY_HISTORY;
-
-  const handleNumberChange = (index: number) => (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setNumberInputs((previous) => previous.map((current, i) => (i === index ? value : current)));
-  };
-
-  const handleStarChange = (index: number) => (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    setStarInputs((previous) => previous.map((current, i) => (i === index ? value : current)));
-  };
 
   const handleEvaluate = () => {
     const numbers = numberInputs.map(Number);
@@ -69,6 +65,42 @@ const EvaluationPage = () => {
       setError('Grille invalide : 5 numéros distincts entre 1 et 50, 2 étoiles distinctes entre 1 et 12.');
     }
   };
+
+  // Lottery-ball-style entry: plain digit typing, auto-advance once a field
+  // is full, backspace on an empty field jumps back - avoids the classic
+  // type="number" pitfalls (spinner arrows, scroll-wheel changes value).
+  const createDigitFieldHandlers = (
+    values: string[],
+    setValues: (updater: (previous: string[]) => string[]) => void,
+    refs: (HTMLInputElement | null)[],
+    nextFieldRef: HTMLElement | null,
+  ) => ({
+    onChange: (index: number) => (event: ChangeEvent<HTMLInputElement>) => {
+      const digits = onlyDigits(event.target.value);
+      setValues((previous) => previous.map((current, i) => (i === index ? digits : current)));
+      if (digits.length === 2) {
+        (refs[index + 1] ?? nextFieldRef)?.focus();
+      }
+    },
+    onKeyDown: (index: number) => (event: KeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'Backspace' && values[index] === '' && index > 0) {
+        refs[index - 1]?.focus();
+      }
+    },
+  });
+
+  const numberHandlers = createDigitFieldHandlers(
+    numberInputs,
+    (updater) => setNumberInputs(updater),
+    numberFieldRefs.current,
+    starFieldRefs.current[0] ?? null,
+  );
+  const starHandlers = createDigitFieldHandlers(
+    starInputs,
+    (updater) => setStarInputs(updater),
+    starFieldRefs.current,
+    evaluateButtonRef.current,
+  );
 
   const scores = useMemo<EvaluationScores | null>(
     () => (grid && history.length > 0 ? evaluateGrid(grid, history) : null),
@@ -90,12 +122,18 @@ const EvaluationPage = () => {
           {numberInputs.map((value, index) => (
             <input
               key={`number-${index}`}
+              ref={(element) => {
+                numberFieldRefs.current[index] = element;
+              }}
               className={styles.numberInput}
-              type="number"
-              min={1}
-              max={50}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={2}
+              autoComplete="off"
               value={value}
-              onChange={handleNumberChange(index)}
+              onChange={numberHandlers.onChange(index)}
+              onKeyDown={numberHandlers.onKeyDown(index)}
               data-testid={`number-input-${index}`}
               aria-label={`Numéro ${index + 1}`}
             />
@@ -106,18 +144,24 @@ const EvaluationPage = () => {
           {starInputs.map((value, index) => (
             <input
               key={`star-${index}`}
+              ref={(element) => {
+                starFieldRefs.current[index] = element;
+              }}
               className={styles.numberInput}
-              type="number"
-              min={1}
-              max={12}
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              maxLength={2}
+              autoComplete="off"
               value={value}
-              onChange={handleStarChange(index)}
+              onChange={starHandlers.onChange(index)}
+              onKeyDown={starHandlers.onKeyDown(index)}
               data-testid={`star-input-${index}`}
               aria-label={`Étoile ${index + 1}`}
             />
           ))}
         </fieldset>
-        <button type="button" onClick={handleEvaluate} data-testid="evaluate-button">
+        <button ref={evaluateButtonRef} type="button" onClick={handleEvaluate} data-testid="evaluate-button">
           Évaluer
         </button>
       </div>
