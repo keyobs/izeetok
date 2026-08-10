@@ -147,7 +147,7 @@ const EvaluationPage = () => {
               ref={(element) => {
                 starFieldRefs.current[index] = element;
               }}
-              className={styles.numberInput}
+              className={`${styles.numberInput} ${styles.starInput}`}
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
@@ -178,10 +178,10 @@ const EvaluationPage = () => {
         <section data-testid="evaluation-results">
           <p data-testid="reading-matrix">Lecture : {READING_LABELS[reading]}</p>
           <div className={styles.scores}>
-            <ScoreCard title="Structure historique" score={scores.structure} />
-            <ScoreCard title="Originalité estimée" score={scores.originality} />
-            <ScoreCard title="Temporalité" score={scores.temporal} />
-            <ScoreCard title="Confiance" score={scores.confidence} />
+            <ScoreCard title="Structure historique" score={scores.structure} accent="structure" />
+            <ScoreCard title="Originalité estimée" score={scores.originality} accent="originality" />
+            <ScoreCard title="Temporalité" score={scores.temporal} accent="temporal" />
+            <ScoreCard title="Confiance" score={scores.confidence} accent="confidence" />
           </div>
         </section>
       )}
@@ -189,15 +189,17 @@ const EvaluationPage = () => {
       {variations.length > 0 && (
         <section data-testid="variations">
           <h2>Variations</h2>
-          <p>
+          <p className={styles.variationsNote}>
             Ces variations ne sont pas présentées comme plus susceptibles d'être tirées : toutes les
             grilles valides ont la même probabilité théorique.
           </p>
-          <ul>
+          <ul className={styles.variationsList}>
             {variations.map((variation) => (
-              <li key={variation.kind} data-testid={`variation-${variation.kind}`}>
-                {VARIATION_LABELS[variation.kind]} : {variation.grid.numbers.join(' · ')} — étoiles{' '}
-                {variation.grid.stars.join(' · ')}
+              <li key={variation.kind} className={styles.variationItem} data-testid={`variation-${variation.kind}`}>
+                <span className={styles.variationLabel}>{VARIATION_LABELS[variation.kind]}</span>
+                <span>
+                  {variation.grid.numbers.join(' · ')} — étoiles {variation.grid.stars.join(' · ')}
+                </span>
               </li>
             ))}
           </ul>

@@ -85,9 +85,11 @@ const LaboratoryPage = () => {
   return (
     <div className={styles.page}>
       <h1>Laboratoire de stratégies</h1>
-      <p>Cette hypothèse fait-elle mieux qu'une stratégie de référence lorsqu'on la teste correctement ?</p>
+      <p className={styles.intro}>
+        Cette hypothèse fait-elle mieux qu'une stratégie de référence lorsqu'on la teste correctement ?
+      </p>
 
-      <section data-testid="strategy-builder">
+      <section className={styles.section} data-testid="strategy-builder">
         <h2>Construire une stratégie</h2>
         <div className={styles.formRow}>
           <label>
@@ -168,7 +170,7 @@ const LaboratoryPage = () => {
         </fieldset>
       </section>
 
-      <section data-testid="experiment-config">
+      <section className={styles.section} data-testid="experiment-config">
         <h2>Configuration de l'expérience</h2>
         <div className={styles.formRow}>
           <label>
@@ -230,34 +232,40 @@ const LaboratoryPage = () => {
       </section>
 
       {experiments.length > 0 && (
-        <section data-testid="experiments-list">
+        <section className={styles.section} data-testid="experiments-list">
           <h2>Expériences de cette session ({experiments.length})</h2>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Stratégie</th>
-                <th>Seed</th>
-                <th>Numéros moy. (test)</th>
-                <th>Percentile Monte Carlo</th>
-                <th />
-              </tr>
-            </thead>
-            <tbody>
-              {experiments.map((experiment) => (
-                <tr key={experiment.id} data-testid="experiment-row">
-                  <td>{experiment.strategy.name}</td>
-                  <td>{experiment.seed}</td>
-                  <td>{experiment.results.metrics.meanMatchedNumbers.toFixed(2)}</td>
-                  <td>{experiment.monteCarlo.strategyPercentile.toFixed(0)}e</td>
-                  <td>
-                    <button type="button" onClick={() => setSelectedExperimentId(experiment.id)} data-testid="select-experiment-button">
-                      Voir
-                    </button>
-                  </td>
+          <div className={styles.tableWrapper}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Stratégie</th>
+                  <th>Seed</th>
+                  <th>Numéros moy. (test)</th>
+                  <th>Percentile Monte Carlo</th>
+                  <th />
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {experiments.map((experiment) => (
+                  <tr key={experiment.id} data-testid="experiment-row">
+                    <td>{experiment.strategy.name}</td>
+                    <td>{experiment.seed}</td>
+                    <td>{experiment.results.metrics.meanMatchedNumbers.toFixed(2)}</td>
+                    <td>{experiment.monteCarlo.strategyPercentile.toFixed(0)}e</td>
+                    <td>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedExperimentId(experiment.id)}
+                        data-testid="select-experiment-button"
+                      >
+                        Voir
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
       )}
 

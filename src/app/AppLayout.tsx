@@ -12,15 +12,18 @@ const AppLayout = () => {
   return (
     <div className={styles.layout}>
       <nav className={styles.nav}>
-        {NAV_ITEMS.map((item) => (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) => (isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink)}
-          >
-            {item.label}
-          </NavLink>
-        ))}
+        <span className={styles.brand}>Geometry Lab</span>
+        <div className={styles.navLinks}>
+          {NAV_ITEMS.map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              className={({ isActive }) => (isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink)}
+            >
+              {item.label}
+            </NavLink>
+          ))}
+        </div>
       </nav>
       <main className={styles.content} data-testid="app-content">
         <Outlet />
