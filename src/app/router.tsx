@@ -3,6 +3,7 @@ import AppLayout from './AppLayout.tsx';
 import EvaluationPage from '../pages/evaluation/EvaluationPage.tsx';
 import DrawsPage from '../pages/draws/DrawsPage.tsx';
 import GeometryPage from '../pages/geometry/GeometryPage.tsx';
+import LaboratoryPage from '../pages/laboratory/LaboratoryPage.tsx';
 import SpikePage from '../pages/spike/SpikePage.tsx';
 
 export const router = createBrowserRouter([
@@ -14,6 +15,7 @@ export const router = createBrowserRouter([
       { path: 'evaluation', element: <EvaluationPage /> },
       { path: 'draws', element: <DrawsPage /> },
       { path: 'geometry', element: <GeometryPage /> },
+      { path: 'laboratory', element: <LaboratoryPage /> },
       { path: 'spike', element: <SpikePage /> },
     ],
   },
