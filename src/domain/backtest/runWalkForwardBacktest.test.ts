@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { parseFdjCsv } from '../../infrastructure/csv/parseFdjCsv.ts';
+import { proposeGrid } from '../strategy/proposeGrid.ts';
 import type { Strategy } from '../strategy/Strategy.ts';
 import { runWalkForwardBacktest } from './runWalkForwardBacktest.ts';
 
@@ -21,7 +22,7 @@ describe('runWalkForwardBacktest', () => {
     const strategy = strategyOf([{ kind: 'number-frequency' }]);
     const range = { start: sortedAscending[100].date, end: sortedAscending[109].date };
 
-    const result = runWalkForwardBacktest(strategy, history, range);
+    const result = runWalkForwardBacktest((h) => proposeGrid(strategy, h), history, range);
 
     expect(result.steps).toHaveLength(10);
     expect(result.metrics.stepCount).toBe(10);
@@ -32,8 +33,12 @@ describe('runWalkForwardBacktest', () => {
     const testRange = { start: sortedAscending[400].date, end: sortedAscending[499].date };
     const truncatedHistory = sortedAscending.slice(0, 500);
 
-    const resultWithFullHistory = runWalkForwardBacktest(strategy, sortedAscending, testRange);
-    const resultWithTruncatedHistory = runWalkForwardBacktest(strategy, truncatedHistory, testRange);
+    const resultWithFullHistory = runWalkForwardBacktest((h) => proposeGrid(strategy, h), sortedAscending, testRange);
+    const resultWithTruncatedHistory = runWalkForwardBacktest(
+      (h) => proposeGrid(strategy, h),
+      truncatedHistory,
+      testRange,
+    );
 
     expect(resultWithFullHistory.steps.map((step) => step.proposedGrid)).toEqual(
       resultWithTruncatedHistory.steps.map((step) => step.proposedGrid),
@@ -44,8 +49,8 @@ describe('runWalkForwardBacktest', () => {
     const strategy = strategyOf([{ kind: 'number-frequency' }], 123);
     const range = { start: sortedAscending[200].date, end: sortedAscending[219].date };
 
-    const resultA = runWalkForwardBacktest(strategy, history, range);
-    const resultB = runWalkForwardBacktest(strategy, history, range);
+    const resultA = runWalkForwardBacktest((h) => proposeGrid(strategy, h), history, range);
+    const resultB = runWalkForwardBacktest((h) => proposeGrid(strategy, h), history, range);
 
     expect(resultA).toEqual(resultB);
   });
@@ -54,7 +59,7 @@ describe('runWalkForwardBacktest', () => {
     const strategy = strategyOf([{ kind: 'number-frequency' }]);
     const range = { start: '1900-01-01', end: '1900-01-02' };
 
-    const result = runWalkForwardBacktest(strategy, history, range);
+    const result = runWalkForwardBacktest((h) => proposeGrid(strategy, h), history, range);
 
     expect(result.steps).toHaveLength(0);
     expect(result.metrics.meanMatchedNumbers).toBe(0);

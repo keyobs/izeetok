@@ -1,8 +1,8 @@
 import type { Draw } from '../draw/Draw.ts';
 import type { Grid } from '../grid/Grid.ts';
-import { proposeGrid } from '../strategy/proposeGrid.ts';
-import type { Strategy } from '../strategy/Strategy.ts';
 import { countMatches, prizeRank } from './prizeRank.ts';
+
+export type GridProposer = (history: Draw[]) => Grid;
 
 export interface DateRange {
   start: string;
@@ -53,13 +53,16 @@ export const computeMetrics = (steps: BacktestStepResult[]): BacktestMetrics => 
 };
 
 /**
- * Walk-forward: for each date T in `dateRange`, the strategy only ever sees
+ * Walk-forward: for each date T in `dateRange`, `propose` only ever sees
  * draws strictly before T (sortedAscending.slice(0, index)) - draws at or
  * after T, including any beyond `dateRange` itself, can never influence the
- * proposal for T. See proposeGrid.test.ts's leakage test for the guarantee.
+ * proposal for T. See this file's leakage test for the guarantee. `propose`
+ * works for both a Strategy (via proposeGrid) and a history-independent
+ * baseline like fixed-grid, which is why it's a plain function rather than
+ * a Strategy parameter.
  */
 export const runWalkForwardBacktest = (
-  strategy: Strategy,
+  propose: GridProposer,
   draws: Draw[],
   dateRange: DateRange,
 ): BacktestResult => {
@@ -71,7 +74,7 @@ export const runWalkForwardBacktest = (
     if (!isWithinRange(draw.date, dateRange)) continue;
 
     const historyBeforeDraw = sortedAscending.slice(0, index);
-    const proposedGrid = proposeGrid(strategy, historyBeforeDraw);
+    const proposedGrid = propose(historyBeforeDraw);
     const matchedNumbers = countMatches(proposedGrid.numbers, draw.numbers);
     const matchedStars = countMatches(proposedGrid.stars, draw.stars);
 

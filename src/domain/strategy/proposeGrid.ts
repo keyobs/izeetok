@@ -48,10 +48,16 @@ const scoreNumbers = (rules: StrategyRule[], history: Draw[]): Record<number, nu
   const scores: Record<number, number> = {};
   for (let n = 1; n <= 50; n += 1) scores[n] = 0;
 
-  const sortedDescending = sortedByDateDescending(history);
+  const needsFrequency = rules.some((rule) => rule.kind === 'number-frequency');
+  const needsRepeat = rules.some((rule) => rule.kind === 'repeat-from-previous');
+  const needsRecency = rules.some((rule) => rule.kind === 'recency');
+
+  const sortedDescending = needsRepeat || needsRecency ? sortedByDateDescending(history) : [];
   const mostRecentDraw = sortedDescending[0];
-  const normalizedFrequency = normalizeToUnit(countByValue(history.flatMap((draw) => draw.numbers), 1, 50));
-  const gaps = gapsSinceLastSeen(sortedDescending, 1, 50, (draw) => draw.numbers);
+  const normalizedFrequency = needsFrequency
+    ? normalizeToUnit(countByValue(history.flatMap((draw) => draw.numbers), 1, 50))
+    : {};
+  const gaps = needsRecency ? gapsSinceLastSeen(sortedDescending, 1, 50, (draw) => draw.numbers) : {};
 
   for (const rule of rules) {
     const weight = rule.weight ?? 1;
@@ -74,6 +80,8 @@ const scoreNumbers = (rules: StrategyRule[], history: Draw[]): Record<number, nu
 const scoreStars = (rules: StrategyRule[], history: Draw[]): Record<number, number> => {
   const scores: Record<number, number> = {};
   for (let s = 1; s <= 12; s += 1) scores[s] = 0;
+
+  if (!rules.some((rule) => rule.kind === 'star-frequency')) return scores;
 
   const normalizedFrequency = normalizeToUnit(countByValue(history.flatMap((draw) => draw.stars), 1, 12));
 
