@@ -1,0 +1,29 @@
+.bubble {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  flex-shrink: 0;
+  border-radius: 50%;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: var(--text-base);
+  border: 1px solid var(--border-strong);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.number {
+  border-color: var(--accent-structure);
+}
+
+.star {
+  border-color: var(--accent-originality);
+}
+
+.highlight {
+  border-color: var(--accent-temporal);
+  background: color-mix(in srgb, var(--accent-temporal) 20%, var(--surface));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-temporal) 40%, transparent);
+}

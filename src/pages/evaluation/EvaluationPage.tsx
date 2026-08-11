@@ -2,8 +2,8 @@ import { useMemo, useRef, useState } from 'react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Draw } from '../../domain/draw/Draw.ts';
-import type { VariationKind } from '../../application/generateVariations.ts';
 import { generateVariations } from '../../application/generateVariations.ts';
+import { VARIATION_DESCRIPTIONS, VARIATION_LABELS } from '../../application/variationLabels.ts';
 import { drawRepository } from '../../application/drawRepository.ts';
 import type { Grid } from '../../domain/grid/Grid.ts';
 import { parseGrid } from '../../domain/grid/Grid.ts';
@@ -26,21 +26,6 @@ const READING_LABELS: Record<ReadingMatrixLabel, string> = {
   interessante: 'Intéressante',
   atypique: 'Atypique',
   'tres-atypique': 'Très atypique',
-};
-
-const VARIATION_LABELS: Record<VariationKind, string> = {
-  'structurally-common': 'Structurellement courante',
-  balanced: 'Équilibrée',
-  'anti-share': 'Anti-partage',
-};
-
-const VARIATION_DESCRIPTIONS: Record<VariationKind, string> = {
-  'structurally-common':
-    'Reproduit un profil (somme, répartition par dizaine, écarts) proche des tirages historiquement fréquents.',
-  balanced:
-    'Répartit les numéros sur les cinq dizaines et équilibre pairs/impairs, pour une grille aux caractéristiques neutres.',
-  'anti-share':
-    'Moins de chance de partager un gain, car elle évite les numéros calendaires (≤31) que beaucoup de joueurs choisissent - cela ne change pas vos chances de gagner.',
 };
 
 const onlyDigits = (value: string): string => value.replace(/\D/g, '').slice(0, 2);
