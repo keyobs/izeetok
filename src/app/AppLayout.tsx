@@ -6,6 +6,7 @@ const NAV_ITEMS = [
   { to: '/draws', label: 'Tirages' },
   { to: '/geometry', label: 'Géométrie' },
   { to: '/laboratory', label: 'Laboratoire' },
+  { to: '/discovery', label: 'Discovery' },
 ];
 
 const AppLayout = () => {
