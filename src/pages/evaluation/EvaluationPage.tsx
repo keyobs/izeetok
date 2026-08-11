@@ -45,8 +45,14 @@ const VARIATION_DESCRIPTIONS: Record<VariationKind, string> = {
 
 const onlyDigits = (value: string): string => value.replace(/\D/g, '').slice(0, 2);
 
-const validityClass = (value: string, min: number, max: number): string => {
+// A value repeated at an earlier index makes this (later) field invalid
+// too, even if it's otherwise in range - a Grid needs 5 distinct numbers
+// and 2 distinct stars, so only the *first* occurrence of a value can be
+// valid.
+const validityClass = (values: string[], index: number, min: number, max: number): string => {
+  const value = values[index];
   if (value === '') return '';
+  if (values.slice(0, index).includes(value)) return styles.inputInvalid;
   const parsed = Number(value);
   return parsed >= min && parsed <= max ? styles.inputValid : styles.inputInvalid;
 };
@@ -151,7 +157,7 @@ const EvaluationPage = () => {
               ref={(element) => {
                 numberFieldRefs.current[index] = element;
               }}
-              className={`${styles.numberInput} ${validityClass(value, NUMBER_MIN, NUMBER_MAX)}`}
+              className={`${styles.numberInput} ${validityClass(numberInputs, index, NUMBER_MIN, NUMBER_MAX)}`}
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
@@ -173,7 +179,7 @@ const EvaluationPage = () => {
               ref={(element) => {
                 starFieldRefs.current[index] = element;
               }}
-              className={`${styles.numberInput} ${styles.starInput} ${validityClass(value, STAR_MIN, STAR_MAX)}`}
+              className={`${styles.numberInput} ${styles.starInput} ${validityClass(starInputs, index, STAR_MIN, STAR_MAX)}`}
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
