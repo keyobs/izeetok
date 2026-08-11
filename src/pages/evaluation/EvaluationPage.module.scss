@@ -21,11 +21,26 @@
   font-size: var(--text-lg);
   font-weight: 600;
   margin-right: var(--space-2);
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .starInput {
   border-radius: 50%;
   border-color: var(--accent-originality);
+}
+
+// !important: these are state overrides that must win regardless of which
+// other input-styling class (e.g. .starInput's own border-color) is combined
+// with them - and combined-class cascade order isn't reliably source order
+// once Vite's dev-time CSS module injection is involved.
+.inputValid {
+  background: color-mix(in srgb, var(--accent-confidence) 25%, var(--surface)) !important;
+  border-color: var(--accent-confidence) !important;
+}
+
+.inputInvalid {
+  background: color-mix(in srgb, var(--danger) 25%, var(--surface)) !important;
+  border-color: var(--danger) !important;
 }
 
 .scores {
@@ -52,23 +67,80 @@
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
+  gap: var(--space-3);
 }
 
 .variationItem {
   display: flex;
-  gap: var(--space-3);
-  align-items: baseline;
-  font-family: var(--mono);
+  flex-direction: column;
+  gap: var(--space-2);
   font-size: var(--text-sm);
-  padding: var(--space-2) var(--space-3);
+  padding: var(--space-3) var(--space-4);
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
+}
+
+.variationHeader {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-family: var(--mono);
 }
 
 .variationLabel {
   font-family: var(--sans);
-  color: var(--text-muted);
+  font-weight: 600;
+  color: var(--text);
   white-space: nowrap;
+}
+
+.variationDescription {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.variationScores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.variationScore {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.dotStructure,
+.dotOriginality,
+.dotTemporal,
+.dotConfidence {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dotStructure {
+  background: var(--accent-structure);
+}
+
+.dotOriginality {
+  background: var(--accent-originality);
+}
+
+.dotTemporal {
+  background: var(--accent-temporal);
+}
+
+.dotConfidence {
+  background: var(--accent-confidence);
 }

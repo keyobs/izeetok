@@ -12,6 +12,11 @@ import { classifyReading, evaluateGrid } from '../../domain/scoring/evaluateGrid
 import ScoreCard from './ScoreCard.tsx';
 import styles from './EvaluationPage.module.scss';
 
+const NUMBER_MIN = 1;
+const NUMBER_MAX = 50;
+const STAR_MIN = 1;
+const STAR_MAX = 12;
+
 const EMPTY_NUMBERS = ['', '', '', '', ''];
 const EMPTY_STARS = ['', ''];
 const EMPTY_HISTORY: Draw[] = [];
@@ -29,7 +34,22 @@ const VARIATION_LABELS: Record<VariationKind, string> = {
   'anti-share': 'Anti-partage',
 };
 
+const VARIATION_DESCRIPTIONS: Record<VariationKind, string> = {
+  'structurally-common':
+    'Reproduit un profil (somme, répartition par dizaine, écarts) proche des tirages historiquement fréquents.',
+  balanced:
+    'Répartit les numéros sur les cinq dizaines et équilibre pairs/impairs, pour une grille aux caractéristiques neutres.',
+  'anti-share':
+    'Moins de chance de partager un gain, car elle évite les numéros calendaires (≤31) que beaucoup de joueurs choisissent - cela ne change pas vos chances de gagner.',
+};
+
 const onlyDigits = (value: string): string => value.replace(/\D/g, '').slice(0, 2);
+
+const validityClass = (value: string, min: number, max: number): string => {
+  if (value === '') return '';
+  const parsed = Number(value);
+  return parsed >= min && parsed <= max ? styles.inputValid : styles.inputInvalid;
+};
 
 const EvaluationPage = () => {
   const [numberInputs, setNumberInputs] = useState<string[]>(EMPTY_NUMBERS);
@@ -107,7 +127,13 @@ const EvaluationPage = () => {
     [grid, history],
   );
   const variations = useMemo(
-    () => (grid && history.length > 0 ? generateVariations(grid, history) : []),
+    () =>
+      grid && history.length > 0
+        ? generateVariations(grid, history).map((variation) => ({
+            ...variation,
+            scores: evaluateGrid(variation.grid, history),
+          }))
+        : [],
     [grid, history],
   );
   const reading = scores ? classifyReading(scores) : null;
@@ -125,7 +151,7 @@ const EvaluationPage = () => {
               ref={(element) => {
                 numberFieldRefs.current[index] = element;
               }}
-              className={styles.numberInput}
+              className={`${styles.numberInput} ${validityClass(value, NUMBER_MIN, NUMBER_MAX)}`}
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
@@ -147,7 +173,7 @@ const EvaluationPage = () => {
               ref={(element) => {
                 starFieldRefs.current[index] = element;
               }}
-              className={`${styles.numberInput} ${styles.starInput}`}
+              className={`${styles.numberInput} ${styles.starInput} ${validityClass(value, STAR_MIN, STAR_MAX)}`}
               type="text"
               inputMode="numeric"
               pattern="[0-9]*"
@@ -196,10 +222,31 @@ const EvaluationPage = () => {
           <ul className={styles.variationsList}>
             {variations.map((variation) => (
               <li key={variation.kind} className={styles.variationItem} data-testid={`variation-${variation.kind}`}>
-                <span className={styles.variationLabel}>{VARIATION_LABELS[variation.kind]}</span>
-                <span>
-                  {variation.grid.numbers.join(' · ')} — étoiles {variation.grid.stars.join(' · ')}
-                </span>
+                <div className={styles.variationHeader}>
+                  <span className={styles.variationLabel}>{VARIATION_LABELS[variation.kind]}</span>
+                  <span>
+                    {variation.grid.numbers.join(' · ')} — étoiles {variation.grid.stars.join(' · ')}
+                  </span>
+                </div>
+                <p className={styles.variationDescription}>{VARIATION_DESCRIPTIONS[variation.kind]}</p>
+                <div className={styles.variationScores} data-testid="variation-scores">
+                  <span className={styles.variationScore}>
+                    <i className={styles.dotStructure} />
+                    Structure historique : {variation.scores.structure.value}
+                  </span>
+                  <span className={styles.variationScore}>
+                    <i className={styles.dotOriginality} />
+                    Originalité estimée : {variation.scores.originality.value}
+                  </span>
+                  <span className={styles.variationScore}>
+                    <i className={styles.dotTemporal} />
+                    Temporalité : {variation.scores.temporal.value}
+                  </span>
+                  <span className={styles.variationScore}>
+                    <i className={styles.dotConfidence} />
+                    Confiance : {variation.scores.confidence.value}
+                  </span>
+                </div>
               </li>
             ))}
           </ul>
