@@ -14,6 +14,7 @@
   --accent-temporal: #b9a3fb;
   --accent-confidence: #5fe0b5;
   --accent-primary: var(--accent-structure);
+  --accent-reference: #ff5eae;
   --danger: #f2707d;
   --danger-surface: rgba(242, 112, 125, 0.1);
 
@@ -70,6 +71,7 @@
     --accent-originality: #c9791f;
     --accent-temporal: #7250c9;
     --accent-confidence: #12886b;
+    --accent-reference: #c2185b;
     --danger: #d4394b;
     --danger-surface: rgba(212, 57, 75, 0.08);
 

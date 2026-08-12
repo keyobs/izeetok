@@ -5,56 +5,10 @@
   text-align: left;
 }
 
-.form {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: var(--space-5);
-}
-
-.numberInput {
-  width: 3rem;
-  height: 3rem;
-  padding: 0;
-  text-align: center;
-  font-family: var(--mono);
-  font-size: var(--text-lg);
-  font-weight: 600;
-  margin-right: var(--space-2);
-  transition: background 0.15s ease, border-color 0.15s ease;
-}
-
-.starInput {
-  border-radius: 50%;
-  border-color: var(--accent-originality);
-}
-
-// !important: these are state overrides that must win regardless of which
-// other input-styling class (e.g. .starInput's own border-color) is combined
-// with them - and combined-class cascade order isn't reliably source order
-// once Vite's dev-time CSS module injection is involved.
-.inputValid {
-  background: color-mix(in srgb, var(--accent-confidence) 25%, var(--surface)) !important;
-  border-color: var(--accent-confidence) !important;
-}
-
-.inputInvalid {
-  background: color-mix(in srgb, var(--danger) 25%, var(--surface)) !important;
-  border-color: var(--danger) !important;
-}
-
 .scores {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: var(--space-4);
-}
-
-.error {
-  color: var(--danger);
-  background: var(--danger-surface);
-  border-radius: var(--radius-sm);
-  padding: var(--space-3) var(--space-4);
-  display: inline-block;
 }
 
 .variationsNote {

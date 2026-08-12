@@ -23,7 +23,7 @@
 }
 
 .highlight {
-  border-color: var(--accent-temporal);
-  background: color-mix(in srgb, var(--accent-temporal) 20%, var(--surface));
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-temporal) 40%, transparent);
+  border-color: var(--accent-reference);
+  background: color-mix(in srgb, var(--accent-reference) 20%, var(--surface));
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent-reference) 40%, transparent);
 }

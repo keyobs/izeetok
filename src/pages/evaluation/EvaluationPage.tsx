@@ -1,24 +1,17 @@
-import { useMemo, useRef, useState } from 'react';
-import type { ChangeEvent, KeyboardEvent } from 'react';
+import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Draw } from '../../domain/draw/Draw.ts';
 import { generateVariations } from '../../application/generateVariations.ts';
 import { VARIATION_DESCRIPTIONS, VARIATION_LABELS } from '../../application/variationLabels.ts';
 import { drawRepository } from '../../application/drawRepository.ts';
+import { evaluatedGridRepository } from '../../application/evaluatedGridRepository.ts';
 import type { Grid } from '../../domain/grid/Grid.ts';
-import { parseGrid } from '../../domain/grid/Grid.ts';
 import type { EvaluationScores, ReadingMatrixLabel } from '../../domain/scoring/evaluateGrid.ts';
 import { classifyReading, evaluateGrid } from '../../domain/scoring/evaluateGrid.ts';
+import GridInputForm from '../../components/gridInput/GridInputForm.tsx';
 import ScoreCard from './ScoreCard.tsx';
 import styles from './EvaluationPage.module.scss';
 
-const NUMBER_MIN = 1;
-const NUMBER_MAX = 50;
-const STAR_MIN = 1;
-const STAR_MAX = 12;
-
-const EMPTY_NUMBERS = ['', '', '', '', ''];
-const EMPTY_STARS = ['', ''];
 const EMPTY_HISTORY: Draw[] = [];
 
 const READING_LABELS: Record<ReadingMatrixLabel, string> = {
@@ -28,29 +21,8 @@ const READING_LABELS: Record<ReadingMatrixLabel, string> = {
   'tres-atypique': 'Très atypique',
 };
 
-const onlyDigits = (value: string): string => value.replace(/\D/g, '').slice(0, 2);
-
-// A value repeated at an earlier index makes this (later) field invalid
-// too, even if it's otherwise in range - a Grid needs 5 distinct numbers
-// and 2 distinct stars, so only the *first* occurrence of a value can be
-// valid.
-const validityClass = (values: string[], index: number, min: number, max: number): string => {
-  const value = values[index];
-  if (value === '') return '';
-  if (values.slice(0, index).includes(value)) return styles.inputInvalid;
-  const parsed = Number(value);
-  return parsed >= min && parsed <= max ? styles.inputValid : styles.inputInvalid;
-};
-
 const EvaluationPage = () => {
-  const [numberInputs, setNumberInputs] = useState<string[]>(EMPTY_NUMBERS);
-  const [starInputs, setStarInputs] = useState<string[]>(EMPTY_STARS);
   const [grid, setGrid] = useState<Grid | null>(null);
-  const [error, setError] = useState<string | null>(null);
-
-  const numberFieldRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const starFieldRefs = useRef<(HTMLInputElement | null)[]>([]);
-  const evaluateButtonRef = useRef<HTMLButtonElement | null>(null);
 
   const historyQuery = useQuery({
     queryKey: ['draws', 'all'],
@@ -58,60 +30,10 @@ const EvaluationPage = () => {
   });
   const history = historyQuery.data ?? EMPTY_HISTORY;
 
-  const handleEvaluate = () => {
-    const numbers = numberInputs.map(Number);
-    const stars = starInputs.map(Number);
-
-    if ([...numbers, ...stars].some((n) => Number.isNaN(n))) {
-      setGrid(null);
-      setError('Merci de remplir les 5 numéros et les 2 étoiles.');
-      return;
-    }
-
-    try {
-      setGrid(parseGrid({ numbers, stars }));
-      setError(null);
-    } catch {
-      setGrid(null);
-      setError('Grille invalide : 5 numéros distincts entre 1 et 50, 2 étoiles distinctes entre 1 et 12.');
-    }
+  const handleGridSubmit = (submittedGrid: Grid) => {
+    setGrid(submittedGrid);
+    evaluatedGridRepository.save(submittedGrid);
   };
-
-  // Lottery-ball-style entry: plain digit typing, auto-advance once a field
-  // is full, backspace on an empty field jumps back - avoids the classic
-  // type="number" pitfalls (spinner arrows, scroll-wheel changes value).
-  const createDigitFieldHandlers = (
-    values: string[],
-    setValues: (updater: (previous: string[]) => string[]) => void,
-    refs: (HTMLInputElement | null)[],
-    nextFieldRef: HTMLElement | null,
-  ) => ({
-    onChange: (index: number) => (event: ChangeEvent<HTMLInputElement>) => {
-      const digits = onlyDigits(event.target.value);
-      setValues((previous) => previous.map((current, i) => (i === index ? digits : current)));
-      if (digits.length === 2) {
-        (refs[index + 1] ?? nextFieldRef)?.focus();
-      }
-    },
-    onKeyDown: (index: number) => (event: KeyboardEvent<HTMLInputElement>) => {
-      if (event.key === 'Backspace' && values[index] === '' && index > 0) {
-        refs[index - 1]?.focus();
-      }
-    },
-  });
-
-  const numberHandlers = createDigitFieldHandlers(
-    numberInputs,
-    (updater) => setNumberInputs(updater),
-    numberFieldRefs.current,
-    starFieldRefs.current[0] ?? null,
-  );
-  const starHandlers = createDigitFieldHandlers(
-    starInputs,
-    (updater) => setStarInputs(updater),
-    starFieldRefs.current,
-    evaluateButtonRef.current,
-  );
 
   const scores = useMemo<EvaluationScores | null>(
     () => (grid && history.length > 0 ? evaluateGrid(grid, history) : null),
@@ -133,61 +55,7 @@ const EvaluationPage = () => {
     <div className={styles.page}>
       <h1>Évaluation d'une grille</h1>
 
-      <div className={styles.form} data-testid="evaluation-form">
-        <fieldset>
-          <legend>Numéros (1-50)</legend>
-          {numberInputs.map((value, index) => (
-            <input
-              key={`number-${index}`}
-              ref={(element) => {
-                numberFieldRefs.current[index] = element;
-              }}
-              className={`${styles.numberInput} ${validityClass(numberInputs, index, NUMBER_MIN, NUMBER_MAX)}`}
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={2}
-              autoComplete="off"
-              value={value}
-              onChange={numberHandlers.onChange(index)}
-              onKeyDown={numberHandlers.onKeyDown(index)}
-              data-testid={`number-input-${index}`}
-              aria-label={`Numéro ${index + 1}`}
-            />
-          ))}
-        </fieldset>
-        <fieldset>
-          <legend>Étoiles (1-12)</legend>
-          {starInputs.map((value, index) => (
-            <input
-              key={`star-${index}`}
-              ref={(element) => {
-                starFieldRefs.current[index] = element;
-              }}
-              className={`${styles.numberInput} ${styles.starInput} ${validityClass(starInputs, index, STAR_MIN, STAR_MAX)}`}
-              type="text"
-              inputMode="numeric"
-              pattern="[0-9]*"
-              maxLength={2}
-              autoComplete="off"
-              value={value}
-              onChange={starHandlers.onChange(index)}
-              onKeyDown={starHandlers.onKeyDown(index)}
-              data-testid={`star-input-${index}`}
-              aria-label={`Étoile ${index + 1}`}
-            />
-          ))}
-        </fieldset>
-        <button ref={evaluateButtonRef} type="button" onClick={handleEvaluate} data-testid="evaluate-button">
-          Évaluer
-        </button>
-      </div>
-
-      {error && (
-        <p role="alert" className={styles.error} data-testid="evaluation-error">
-          {error}
-        </p>
-      )}
+      <GridInputForm onSubmit={handleGridSubmit} submitLabel="Évaluer" submitButtonTestId="evaluate-button" />
 
       {historyQuery.isLoading && <p>Chargement de l'historique...</p>}
 

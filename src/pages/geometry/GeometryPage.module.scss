@@ -5,6 +5,51 @@
   text-align: left;
 }
 
+.intro {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+.sourceSelector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.sourceButton,
+.sourceButtonActive {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.sourceButtonActive {
+  background: var(--accent-primary);
+  color: #0a0c11;
+  border-color: var(--accent-primary);
+}
+
+.sourceHint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.emptyCustomHint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+  font-style: italic;
+}
+
 .section {
   display: flex;
   flex-direction: column;
@@ -73,4 +118,50 @@
   margin: 0;
   color: var(--text-muted);
   font-size: var(--text-xs);
+}
+
+.neighborList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.neighborRow {
+  display: grid;
+  grid-template-columns: 6rem 1fr 8rem;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+.neighborDate {
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  font-family: var(--mono);
+}
+
+.neighborBubbles {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.neighborProximity {
+  height: 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--border);
+  overflow: hidden;
+}
+
+.neighborProximityFill {
+  display: block;
+  height: 100%;
+  background: var(--accent-reference);
+  border-radius: var(--radius-sm);
 }
