@@ -13,6 +13,7 @@ on:
 
 permissions:
   contents: read
+  packages: read
   pages: write
   id-token: write
 
@@ -42,9 +43,10 @@ jobs:
         with:
           version: 11.0.9
           runtime: node@24
+          install: false
 
       - name: Configure private registry auth
-        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GH_PACKAGES_TOKEN }}" >> .npmrc
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
