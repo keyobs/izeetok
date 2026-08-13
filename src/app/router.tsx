@@ -7,18 +7,21 @@ import LaboratoryPage from '../pages/laboratory/LaboratoryPage.tsx';
 import DiscoveryPage from '../pages/discovery/DiscoveryPage.tsx';
 import SpikePage from '../pages/spike/SpikePage.tsx';
 
-export const router = createBrowserRouter([
-  {
-    path: '/',
-    element: <AppLayout />,
-    children: [
-      { index: true, element: <Navigate to="/evaluation" replace /> },
-      { path: 'evaluation', element: <EvaluationPage /> },
-      { path: 'draws', element: <DrawsPage /> },
-      { path: 'geometry', element: <GeometryPage /> },
-      { path: 'laboratory', element: <LaboratoryPage /> },
-      { path: 'discovery', element: <DiscoveryPage /> },
-      { path: 'spike', element: <SpikePage /> },
-    ],
-  },
-]);
+export const router = createBrowserRouter(
+  [
+    {
+      path: '/',
+      element: <AppLayout />,
+      children: [
+        { index: true, element: <Navigate to="/evaluation" replace /> },
+        { path: 'evaluation', element: <EvaluationPage /> },
+        { path: 'draws', element: <DrawsPage /> },
+        { path: 'geometry', element: <GeometryPage /> },
+        { path: 'laboratory', element: <LaboratoryPage /> },
+        { path: 'discovery', element: <DiscoveryPage /> },
+        { path: 'spike', element: <SpikePage /> },
+      ],
+    },
+  ],
+  { basename: import.meta.env.VITE_BASE_PATH || '/' },
+);
