@@ -2,7 +2,7 @@ import type { Draw } from '../../domain/draw/Draw.ts';
 import { parseFdjCsv } from '../csv/parseFdjCsv.ts';
 import type { DrawRepository } from './DrawRepository.ts';
 
-export const DEFAULT_CSV_URL = '/results/euromillions_202002.csv';
+export const DEFAULT_CSV_URL = `${import.meta.env.BASE_URL}results/euromillions_202002.csv`;
 
 export const createCsvDrawRepository = (csvUrl: string = DEFAULT_CSV_URL): DrawRepository => {
   let cachedDraws: Promise<Draw[]> | null = null;

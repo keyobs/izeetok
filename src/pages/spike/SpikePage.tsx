@@ -4,7 +4,7 @@ import { parseFdjCsv } from '../../infrastructure/csv/parseFdjCsv.ts';
 import { buildSpatialEmbeddings } from '../../application/buildSpatialEmbeddings.ts';
 import PointCloudScene from '../../spike/PointCloudScene.tsx';
 
-const CSV_URL = '/results/euromillions_202002.csv';
+const CSV_URL = `${import.meta.env.BASE_URL}results/euromillions_202002.csv`;
 
 const SpikePage = () => {
   const [embeddings, setEmbeddings] = useState<SpatialEmbedding[] | null>(null);
