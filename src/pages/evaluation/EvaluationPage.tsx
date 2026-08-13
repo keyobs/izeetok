@@ -23,7 +23,7 @@ const READING_LABELS: Record<ReadingMatrixLabel, string> = {
 };
 
 const EvaluationPage = () => {
-  const [grid, setGrid] = useState<Grid | null>(null);
+  const [grid, setGrid] = useState<Grid | null>(() => evaluatedGridRepository.getLast());
 
   const historyQuery = useQuery({
     queryKey: ['draws', 'all'],
@@ -72,7 +72,12 @@ const EvaluationPage = () => {
     <div className={styles.page}>
       <h1>Évaluation d'une grille</h1>
 
-      <GridInputForm onSubmit={handleGridSubmit} submitLabel="Évaluer" submitButtonTestId="evaluate-button" />
+      <GridInputForm
+        onSubmit={handleGridSubmit}
+        submitLabel="Évaluer"
+        submitButtonTestId="evaluate-button"
+        initialGrid={grid}
+      />
 
       {historyQuery.isLoading && <p>Chargement de l'historique...</p>}
 

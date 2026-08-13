@@ -30,11 +30,21 @@ interface GridInputFormProps {
   onSubmit: (grid: Grid) => void;
   submitLabel: string;
   submitButtonTestId?: string;
+  initialGrid?: Grid | null;
 }
 
-const GridInputForm = ({ onSubmit, submitLabel, submitButtonTestId = 'evaluate-button' }: GridInputFormProps) => {
-  const [numberInputs, setNumberInputs] = useState<string[]>(EMPTY_NUMBERS);
-  const [starInputs, setStarInputs] = useState<string[]>(EMPTY_STARS);
+const GridInputForm = ({
+  onSubmit,
+  submitLabel,
+  submitButtonTestId = 'evaluate-button',
+  initialGrid = null,
+}: GridInputFormProps) => {
+  const [numberInputs, setNumberInputs] = useState<string[]>(
+    initialGrid ? initialGrid.numbers.map(String) : EMPTY_NUMBERS,
+  );
+  const [starInputs, setStarInputs] = useState<string[]>(
+    initialGrid ? initialGrid.stars.map(String) : EMPTY_STARS,
+  );
   const [error, setError] = useState<string | null>(null);
 
   const numberFieldRefs = useRef<(HTMLInputElement | null)[]>([]);

@@ -104,6 +104,35 @@ describe('EvaluationPage', () => {
     expect(screen.getByTestId('exact-match-banner')).toHaveTextContent("n'est jamais sortie");
   });
 
+  it('restores the last evaluated grid when the page is remounted', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response(REAL_CSV_TEXT)));
+    const user = userEvent.setup();
+
+    const first = renderWithProviders(<EvaluationPage />);
+
+    const numbers = [3, 7, 19, 31, 42];
+    const stars = [2, 9];
+    for (const [index, value] of numbers.entries()) {
+      await user.type(screen.getByTestId(`number-input-${index}`), String(value));
+    }
+    for (const [index, value] of stars.entries()) {
+      await user.type(screen.getByTestId(`star-input-${index}`), String(value));
+    }
+    await user.click(screen.getByTestId('evaluate-button'));
+    await waitFor(() => expect(screen.getAllByTestId('score-card')).toHaveLength(4));
+
+    first.unmount();
+    renderWithProviders(<EvaluationPage />);
+
+    for (const [index, value] of numbers.entries()) {
+      expect(screen.getByTestId(`number-input-${index}`)).toHaveValue(String(value));
+    }
+    for (const [index, value] of stars.entries()) {
+      expect(screen.getByTestId(`star-input-${index}`)).toHaveValue(String(value));
+    }
+    await waitFor(() => expect(screen.getAllByTestId('score-card')).toHaveLength(4));
+  });
+
   it('saves the evaluated grid so /geometry can reuse it as reference', async () => {
     vi.stubGlobal('fetch', () => Promise.resolve(new Response(REAL_CSV_TEXT)));
     const user = userEvent.setup();
