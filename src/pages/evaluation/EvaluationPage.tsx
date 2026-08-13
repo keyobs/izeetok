@@ -8,7 +8,7 @@ import { evaluatedGridRepository } from '../../application/evaluatedGridReposito
 import type { Grid } from '../../domain/grid/Grid.ts';
 import type { EvaluationScores, ReadingMatrixLabel } from '../../domain/scoring/evaluateGrid.ts';
 import { classifyReading, evaluateGrid } from '../../domain/scoring/evaluateGrid.ts';
-import { findExactMatch } from '../../domain/draw/findExactMatch.ts';
+import { findExactMatch, findNumbersOnlyMatches } from '../../domain/draw/findExactMatch.ts';
 import GridInputForm from '../../components/gridInput/GridInputForm.tsx';
 import ScoreCard from './ScoreCard.tsx';
 import styles from './EvaluationPage.module.scss';
@@ -56,6 +56,10 @@ const EvaluationPage = () => {
     () => (grid && history.length > 0 ? findExactMatch(grid, history) : null),
     [grid, history],
   );
+  const numbersOnlyMatches = useMemo(
+    () => (grid && history.length > 0 && !exactMatch ? findNumbersOnlyMatches(grid, history) : []),
+    [grid, history, exactMatch],
+  );
   const earliestDrawDate = useMemo(
     () =>
       history.length === 0
@@ -80,6 +84,12 @@ const EvaluationPage = () => {
               {exactMatch
                 ? `Cette grille est déjà sortie le ${exactMatch.date} — la retirer ne change rien à ses chances de sortir à nouveau.`
                 : `Cette grille n'est jamais sortie dans l'historique disponible (depuis ${earliestDrawDate}) — comme la grande majorité des combinaisons possibles.`}
+            </p>
+          )}
+          {numbersOnlyMatches.length > 0 && (
+            <p data-testid="numbers-only-match-banner" className={styles.exactMatch}>
+              Les 5 numéros de cette grille sont déjà sortis, avec des étoiles différentes :{' '}
+              {numbersOnlyMatches.map((draw) => draw.date).join(', ')}.
             </p>
           )}
           <div className={styles.scores}>

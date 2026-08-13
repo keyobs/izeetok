@@ -82,6 +82,28 @@ describe('EvaluationPage', () => {
     );
   });
 
+  it('flags when the 5 numbers match a past draw but the stars differ', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response(REAL_CSV_TEXT)));
+    const user = userEvent.setup();
+
+    renderWithProviders(<EvaluationPage />);
+
+    const numbers = [21, 23, 33, 35, 47];
+    const stars = [3, 4];
+    for (const [index, value] of numbers.entries()) {
+      await user.type(screen.getByTestId(`number-input-${index}`), String(value));
+    }
+    for (const [index, value] of stars.entries()) {
+      await user.type(screen.getByTestId(`star-input-${index}`), String(value));
+    }
+    await user.click(screen.getByTestId('evaluate-button'));
+
+    await waitFor(() =>
+      expect(screen.getByTestId('numbers-only-match-banner')).toHaveTextContent('2020-02-04'),
+    );
+    expect(screen.getByTestId('exact-match-banner')).toHaveTextContent("n'est jamais sortie");
+  });
+
   it('saves the evaluated grid so /geometry can reuse it as reference', async () => {
     vi.stubGlobal('fetch', () => Promise.resolve(new Response(REAL_CSV_TEXT)));
     const user = userEvent.setup();
