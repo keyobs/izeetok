@@ -5,6 +5,11 @@
   text-align: left;
 }
 
+.exactMatch {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
 .scores {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

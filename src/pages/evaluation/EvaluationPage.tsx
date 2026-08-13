@@ -8,6 +8,7 @@ import { evaluatedGridRepository } from '../../application/evaluatedGridReposito
 import type { Grid } from '../../domain/grid/Grid.ts';
 import type { EvaluationScores, ReadingMatrixLabel } from '../../domain/scoring/evaluateGrid.ts';
 import { classifyReading, evaluateGrid } from '../../domain/scoring/evaluateGrid.ts';
+import { findExactMatch } from '../../domain/draw/findExactMatch.ts';
 import GridInputForm from '../../components/gridInput/GridInputForm.tsx';
 import ScoreCard from './ScoreCard.tsx';
 import styles from './EvaluationPage.module.scss';
@@ -51,6 +52,18 @@ const EvaluationPage = () => {
   );
   const reading = scores ? classifyReading(scores) : null;
 
+  const exactMatch = useMemo(
+    () => (grid && history.length > 0 ? findExactMatch(grid, history) : null),
+    [grid, history],
+  );
+  const earliestDrawDate = useMemo(
+    () =>
+      history.length === 0
+        ? null
+        : history.reduce((earliest, draw) => (draw.date < earliest ? draw.date : earliest), history[0].date),
+    [history],
+  );
+
   return (
     <div className={styles.page}>
       <h1>Évaluation d'une grille</h1>
@@ -62,6 +75,13 @@ const EvaluationPage = () => {
       {scores && reading && (
         <section data-testid="evaluation-results">
           <p data-testid="reading-matrix">Lecture : {READING_LABELS[reading]}</p>
+          {earliestDrawDate && (
+            <p data-testid="exact-match-banner" className={styles.exactMatch}>
+              {exactMatch
+                ? `Cette grille est déjà sortie le ${exactMatch.date} — la retirer ne change rien à ses chances de sortir à nouveau.`
+                : `Cette grille n'est jamais sortie dans l'historique disponible (depuis ${earliestDrawDate}) — comme la grande majorité des combinaisons possibles.`}
+            </p>
+          )}
           <div className={styles.scores}>
             <ScoreCard title="Structure historique" score={scores.structure} accent="structure" />
             <ScoreCard title="Originalité estimée" score={scores.originality} accent="originality" />
