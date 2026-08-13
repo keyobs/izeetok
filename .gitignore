@@ -32,3 +32,6 @@ devdx
 playwright-report
 test-results
 blob-report
+
+# Vercel CLI local link artifacts
+.vercel
