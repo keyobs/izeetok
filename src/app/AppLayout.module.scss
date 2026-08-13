@@ -12,6 +12,9 @@
   padding: var(--space-4) var(--space-6);
   border-bottom: 1px solid var(--border);
   background: var(--surface);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .brand {
