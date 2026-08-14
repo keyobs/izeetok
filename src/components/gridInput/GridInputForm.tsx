@@ -107,7 +107,13 @@ const GridInputForm = ({
 
   return (
     <div className={styles.formWrapper}>
-      <div className={styles.form} data-testid="grid-input-form">
+      <div
+        className={styles.form}
+        data-testid="grid-input-form"
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') handleSubmit();
+        }}
+      >
         <fieldset>
           <legend>Numéros (1-50)</legend>
           {numberInputs.map((value, index) => (
