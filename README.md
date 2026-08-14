@@ -39,7 +39,7 @@ pnpm dev
 
 ## Deployment
 
-`main` → Vercel (production, native Git integration).
+`main` → Vercel (production, native Git integration) : [izeetok.vercel.app/](https://izeetok.vercel.app/)  
 `develop` → GitHub Pages: [keyobs.github.io/izeetok](https://keyobs.github.io/izeetok)
 
 ## Architecture
