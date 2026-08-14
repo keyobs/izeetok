@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import styles from './AppLayout.module.scss';
 
@@ -10,15 +11,33 @@ const NAV_ITEMS = [
 ];
 
 const AppLayout = () => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   return (
     <div className={styles.layout}>
       <nav className={styles.nav}>
         <span className={styles.brand}>Geometry Lab</span>
-        <div className={styles.navLinks}>
+        <button
+          type="button"
+          className={styles.navToggle}
+          aria-expanded={isMenuOpen}
+          aria-label={isMenuOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
+          onClick={() => setIsMenuOpen((previous) => !previous)}
+          data-testid="nav-toggle-button"
+        >
+          <span className={styles.navToggleBar} />
+          <span className={styles.navToggleBar} />
+          <span className={styles.navToggleBar} />
+        </button>
+        <div
+          className={isMenuOpen ? `${styles.navLinks} ${styles.navLinksOpen}` : styles.navLinks}
+          data-testid="nav-links"
+        >
           {NAV_ITEMS.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
+              onClick={() => setIsMenuOpen(false)}
               className={({ isActive }) => (isActive ? `${styles.navLink} ${styles.navLinkActive}` : styles.navLink)}
             >
               {item.label}
