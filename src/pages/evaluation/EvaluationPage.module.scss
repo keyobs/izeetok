@@ -1,0 +1,105 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  text-align: left;
+}
+
+.exactMatch {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.scores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: var(--space-4);
+}
+
+.variationsNote {
+  color: var(--text-muted);
+  font-size: var(--text-sm);
+}
+
+.variationsList {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.variationItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  padding: var(--space-3) var(--space-4);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.variationHeader {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  flex-wrap: wrap;
+  font-family: var(--mono);
+}
+
+.variationLabel {
+  font-family: var(--sans);
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+}
+
+.variationDescription {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  line-height: 1.5;
+}
+
+.variationScores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--text-muted);
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--border);
+}
+
+.variationScore {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.dotStructure,
+.dotOriginality,
+.dotTemporal,
+.dotConfidence {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dotStructure {
+  background: var(--accent-structure);
+}
+
+.dotOriginality {
+  background: var(--accent-originality);
+}
+
+.dotTemporal {
+  background: var(--accent-temporal);
+}
+
+.dotConfidence {
+  background: var(--accent-confidence);
+}

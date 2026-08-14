@@ -1,0 +1,45 @@
+name: Tests
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: "Ref (branch or tag) to test"
+        required: false
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.ref }}
+
+      - name: Setup pnpm + Node.js
+        uses: pnpm/setup@v2
+        with:
+          version: 11.0.9
+          runtime: node@24
+          install: false
+
+      - name: Configure private registry auth
+        run: echo "//npm.pkg.github.com/:_authToken=${{ secrets.GITHUB_TOKEN }}" >> .npmrc
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: pnpm check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Run tests
+        run: pnpm test:run
