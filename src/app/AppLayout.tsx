@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router';
 import styles from './AppLayout.module.scss';
 
@@ -12,10 +12,24 @@ const NAV_ITEMS = [
 
 const AppLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!isMenuOpen) return;
+
+    const closeIfOutside = (event: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', closeIfOutside);
+    return () => document.removeEventListener('mousedown', closeIfOutside);
+  }, [isMenuOpen]);
 
   return (
     <div className={styles.layout}>
-      <nav className={styles.nav}>
+      <nav className={styles.nav} ref={navRef}>
         <span className={styles.brand}>Geometry Lab</span>
         <button
           type="button"

@@ -48,4 +48,19 @@ describe('AppLayout', () => {
     await user.click(screen.getByRole('link', { name: 'Tirages' }));
     expect(screen.getByTestId('nav-toggle-button')).toHaveAttribute('aria-expanded', 'false');
   });
+
+  it('closes the mobile menu when clicking outside of it', async () => {
+    const user = userEvent.setup();
+    render(
+      <MemoryRouter>
+        <AppLayout />
+      </MemoryRouter>,
+    );
+
+    await user.click(screen.getByTestId('nav-toggle-button'));
+    expect(screen.getByTestId('nav-toggle-button')).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(screen.getByTestId('app-content'));
+    expect(screen.getByTestId('nav-toggle-button')).toHaveAttribute('aria-expanded', 'false');
+  });
 });
