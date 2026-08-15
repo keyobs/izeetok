@@ -1,14 +1,13 @@
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { Experiment } from './runExperiment.ts';
 import { buildHistogram } from './buildHistogram.ts';
+import { windowLabel } from './windowLabel.ts';
 import styles from './LaboratoryPage.module.scss';
 
 interface ExperimentResultsProps {
   experiment: Experiment;
   onExport: (experiment: Experiment) => void;
 }
-
-const windowLabel = (window: Experiment['windows'][number]): string => (window === 'all' ? 'Tout' : `${window} an(s)`);
 
 const ExperimentResults = ({ experiment, onExport }: ExperimentResultsProps) => {
   const histogramData = buildHistogram(experiment.monteCarlo.distribution, 10);
