@@ -4,10 +4,10 @@ import styles from './AppLayout.module.scss';
 
 const NAV_ITEMS = [
   { to: '/evaluation', label: 'Évaluation' },
-  { to: '/draws', label: 'Tirages' },
   { to: '/geometry', label: 'Géométrie' },
   { to: '/laboratory', label: 'Laboratoire' },
   { to: '/discovery', label: 'Discovery' },
+  { to: '/draws', label: 'Tirages' },
 ];
 
 const AppLayout = () => {
