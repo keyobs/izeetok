@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import type { ChangeEvent, KeyboardEvent } from 'react';
-import type { Grid } from '../../domain/grid/Grid.ts';
-import { parseGrid } from '../../domain/grid/Grid.ts';
+import type { Grid } from '../../analysis/grid/Grid.ts';
+import { parseGrid } from '../../analysis/grid/Grid.ts';
 import styles from './GridInputForm.module.scss';
 
 const NUMBER_MIN = 1;
