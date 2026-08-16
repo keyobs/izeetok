@@ -3,8 +3,9 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../../testing/renderWithProviders.tsx';
 import { REAL_CSV_TEXT } from '../../testing/testCsvFixture.ts';
-import { evaluatedGridRepository } from '../../providers/evaluatedGridRepositoryInstance.ts';
 import EvaluationPage from './EvaluationPage.tsx';
+
+const STORAGE_KEY = 'izeetok:evaluated-grid';
 
 describe('EvaluationPage', () => {
   afterEach(() => {
@@ -168,6 +169,8 @@ describe('EvaluationPage', () => {
     }
     await user.click(screen.getByTestId('evaluate-button'));
 
-    await waitFor(() => expect(evaluatedGridRepository.getLast()).toEqual({ numbers, stars }));
+    await waitFor(() =>
+      expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? 'null')).toEqual({ numbers, stars }),
+    );
   });
 });

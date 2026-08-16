@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { drawRepository } from '../../api/drawRepositoryInstance.ts';
-import { evaluatedGridRepository } from '../../providers/evaluatedGridRepositoryInstance.ts';
+import { useEvaluatedGrid } from '../../providers/EvaluatedGridContext.tsx';
 import type { GridVariation } from '../../analysis/generateVariations.ts';
 import { generateVariations } from '../../analysis/generateVariations.ts';
 import type { Draw } from '../../analysis/draw/Draw.ts';
@@ -71,7 +71,7 @@ export const useGeometryPage = (): GeometryPageViewModel => {
   });
   const draws = drawsQuery.data ?? EMPTY_DRAWS;
 
-  const evaluatedGrid = useMemo(() => evaluatedGridRepository.getLast(), []);
+  const { evaluatedGrid } = useEvaluatedGrid();
 
   const [source, setSource] = useState<ReferenceSource>(evaluatedGrid ? 'evaluated' : 'latest');
   const [customGrid, setCustomGrid] = useState<Grid | null>(null);

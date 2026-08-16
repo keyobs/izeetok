@@ -3,8 +3,9 @@ import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { renderWithProviders } from '../../testing/renderWithProviders.tsx';
 import { REAL_CSV_TEXT } from '../../testing/testCsvFixture.ts';
-import { evaluatedGridRepository } from '../../providers/evaluatedGridRepositoryInstance.ts';
 import GeometryPage from './GeometryPage.tsx';
+
+const STORAGE_KEY = 'izeetok:evaluated-grid';
 
 describe('GeometryPage', () => {
   beforeEach(() => {
@@ -38,7 +39,7 @@ describe('GeometryPage', () => {
 
   it('uses the grid evaluated on /evaluation as the reference when one was saved', async () => {
     vi.stubGlobal('fetch', () => Promise.resolve(new Response(REAL_CSV_TEXT)));
-    evaluatedGridRepository.save({ numbers: [3, 7, 19, 31, 42], stars: [2, 9] });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ numbers: [3, 7, 19, 31, 42], stars: [2, 9] }));
 
     renderWithProviders(<GeometryPage />);
 

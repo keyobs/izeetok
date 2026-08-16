@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import type { Draw } from '../../analysis/draw/Draw.ts';
 import type { GridVariation } from '../../analysis/generateVariations.ts';
 import { generateVariations } from '../../analysis/generateVariations.ts';
 import { drawRepository } from '../../api/drawRepositoryInstance.ts';
-import { evaluatedGridRepository } from '../../providers/evaluatedGridRepositoryInstance.ts';
+import { useEvaluatedGrid } from '../../providers/EvaluatedGridContext.tsx';
 import type { Grid } from '../../analysis/grid/Grid.ts';
 import type { EvaluationScores, ReadingMatrixLabel } from '../../analysis/scoring/evaluateGrid.ts';
 import { classifyReading, evaluateGrid } from '../../analysis/scoring/evaluateGrid.ts';
@@ -29,7 +29,7 @@ export interface EvaluationPageViewModel {
 }
 
 export const useEvaluationPage = (): EvaluationPageViewModel => {
-  const [grid, setGrid] = useState<Grid | null>(() => evaluatedGridRepository.getLast());
+  const { evaluatedGrid: grid, setEvaluatedGrid } = useEvaluatedGrid();
 
   const historyQuery = useQuery({
     queryKey: ['draws', 'all'],
@@ -38,8 +38,7 @@ export const useEvaluationPage = (): EvaluationPageViewModel => {
   const history = historyQuery.data ?? EMPTY_HISTORY;
 
   const onGridSubmit = (submittedGrid: Grid) => {
-    setGrid(submittedGrid);
-    evaluatedGridRepository.save(submittedGrid);
+    setEvaluatedGrid(submittedGrid);
   };
 
   const scores = useMemo<EvaluationScores | null>(
