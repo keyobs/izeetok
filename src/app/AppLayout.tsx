@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { NavLink, Outlet, useLocation } from 'react-router';
+import ErrorBoundary from '../components/errorBoundary/ErrorBoundary.tsx';
 import styles from './AppLayout.module.scss';
 
 const NAV_ITEMS = [
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
 const AppLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
+  const { pathname } = useLocation();
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -60,7 +62,9 @@ const AppLayout = () => {
         </div>
       </nav>
       <main className={styles.content} data-testid="app-content">
-        <Outlet />
+        <ErrorBoundary key={pathname}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       <footer className={styles.disclaimer} data-testid="non-predictive-disclaimer">
         Toutes les combinaisons EuroMillions valides ont la même probabilité théorique lors d'un
