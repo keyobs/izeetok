@@ -3,14 +3,16 @@ import type { DrawsPageViewModel } from './useDrawsPage.ts';
 import styles from './DrawsPage.module.scss';
 
 const highlightedCell = (values: readonly number[], highlightValues: readonly number[] | undefined) => (
-  <>
-    {values.map((value, index) => (
-      <span key={value} className={highlightValues?.includes(value) ? styles.matched : undefined}>
-        {index > 0 && ' · '}
+  <div className={styles.badgeRow}>
+    {values.map((value) => (
+      <span
+        key={value}
+        className={highlightValues?.includes(value) ? `${styles.badge} ${styles.badgeMatched}` : styles.badge}
+      >
         {value}
       </span>
     ))}
-  </>
+  </div>
 );
 
 const DrawsScreen = ({
@@ -45,10 +47,10 @@ const DrawsScreen = ({
             aria-pressed={isHighlightOn}
             onClick={onToggleHighlight}
             disabled={!isHighlightAvailable}
-            title={isHighlightAvailable ? undefined : 'Renseignez votre grille en haut de page pour activer le surlignage'}
+            title={isHighlightAvailable ? undefined : `Définir une grille pour voir l'historique`}
             data-testid="highlight-toggle"
           >
-            {isHighlightOn ? 'Ne plus surligner ma grille' : 'Surligner ma grille'}
+            {isHighlightOn ? 'Masquer mes numéros' : 'Identifier mes numéros'}
           </button>
         </p>
         <div className={styles.tableWrapper}>
