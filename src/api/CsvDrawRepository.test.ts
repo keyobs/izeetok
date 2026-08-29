@@ -42,4 +42,26 @@ describe('createCsvDrawRepository', () => {
     expect(await repository.getByDate(mostRecent.date)).toEqual(mostRecent);
     expect(await repository.getByDate('1900-01-01')).toBeNull();
   });
+
+  it('rejects with a clear error when the CSV request fails, instead of parsing the error body', async () => {
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response('<html>not found</html>', { status: 404 })));
+    const repository = createCsvDrawRepository('/results/test.csv');
+
+    await expect(repository.getAll()).rejects.toThrow('HTTP 404');
+  });
+
+  it('retries the fetch on the next call after a failure, instead of caching the rejection', async () => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValueOnce(new Response('', { status: 500 }))
+      .mockResolvedValueOnce(new Response(csvText));
+    vi.stubGlobal('fetch', fetchSpy);
+    const repository = createCsvDrawRepository('/results/test.csv');
+
+    await expect(repository.getAll()).rejects.toThrow('HTTP 500');
+    const all = await repository.getAll();
+
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    expect(all.length).toBeGreaterThan(600);
+  });
 });

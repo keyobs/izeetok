@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { drawRepository } from '../../api/drawRepositoryInstance.ts';
+import { useDraws } from '../../hooks/useDraws.ts';
 import type { Draw } from '../../analysis/draw/Draw.ts';
 import { buildGeometryDescriptor } from '../../analysis/geometry/GeometryDescriptor.ts';
 import { computeGeometryDistance } from '../../analysis/geometry/GeometryDistance.ts';
@@ -46,6 +45,8 @@ const buildRowsMostRecentFirst = (draws: Draw[]): DrawRow[] => {
 
 export interface DrawsPageViewModel {
   isLoading: boolean;
+  isDrawsError: boolean;
+  onRetryDraws: () => void;
   hasData: boolean;
   rows: DrawRow[];
   showAll: boolean;
@@ -55,19 +56,18 @@ export interface DrawsPageViewModel {
 export const useDrawsPage = (): DrawsPageViewModel => {
   const [showAll, setShowAll] = useState(false);
 
-  const allDrawsQuery = useQuery({
-    queryKey: ['draws', 'all'],
-    queryFn: () => drawRepository.getAll(),
-  });
+  const { draws, isLoading, isError: isDrawsError, refetch: onRetryDraws } = useDraws();
 
   const rows = useMemo(() => {
-    const allRows = buildRowsMostRecentFirst(allDrawsQuery.data ?? []);
+    const allRows = buildRowsMostRecentFirst(draws);
     return showAll ? allRows : allRows.slice(0, DEFAULT_LIMIT);
-  }, [allDrawsQuery.data, showAll]);
+  }, [draws, showAll]);
 
   return {
-    isLoading: allDrawsQuery.isLoading,
-    hasData: Boolean(allDrawsQuery.data),
+    isLoading,
+    isDrawsError,
+    onRetryDraws,
+    hasData: draws.length > 0,
     rows,
     showAll,
     toggleShowAll: () => setShowAll((previous) => !previous),

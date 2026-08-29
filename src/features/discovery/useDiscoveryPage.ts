@@ -1,11 +1,7 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { drawRepository } from '../../api/drawRepositoryInstance.ts';
+import { useDraws } from '../../hooks/useDraws.ts';
 import type { DiscoveryConfig, DiscoveryResult } from './discoverStructure.ts';
 import { discoverStructure } from './discoverStructure.ts';
-import type { Draw } from '../../analysis/draw/Draw.ts';
-
-const EMPTY_DRAWS: Draw[] = [];
 
 const DISCOVERY_CONFIG: DiscoveryConfig = {
   kCandidates: [2, 3, 4, 5, 6, 7, 8],
@@ -22,13 +18,14 @@ export interface ScatterPoint {
 
 export interface DiscoveryPageViewModel {
   isLoading: boolean;
+  isDrawsError: boolean;
+  onRetryDraws: () => void;
   discovery: DiscoveryResult | null;
   scatterSeriesByCluster: [string, ScatterPoint[]][];
 }
 
 export const useDiscoveryPage = (): DiscoveryPageViewModel => {
-  const drawsQuery = useQuery({ queryKey: ['draws', 'all'], queryFn: () => drawRepository.getAll() });
-  const draws = drawsQuery.data ?? EMPTY_DRAWS;
+  const { draws, isLoading, isError: isDrawsError, refetch: onRetryDraws } = useDraws();
 
   const discovery = useMemo(() => (draws.length > 0 ? discoverStructure(draws, DISCOVERY_CONFIG) : null), [draws]);
 
@@ -45,7 +42,9 @@ export const useDiscoveryPage = (): DiscoveryPageViewModel => {
   }, [discovery]);
 
   return {
-    isLoading: drawsQuery.isLoading,
+    isLoading,
+    isDrawsError,
+    onRetryDraws,
     discovery,
     scatterSeriesByCluster,
   };

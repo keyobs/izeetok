@@ -12,6 +12,7 @@ import {
 import Bubble from '../../components/bubble/Bubble.tsx';
 import NumberChain from '../../components/bubble/NumberChain.tsx';
 import ChartLegend from '../../components/chartLegend/ChartLegend.tsx';
+import DataLoadError from '../../components/dataLoadError/DataLoadError.tsx';
 import GridInputForm from '../../components/gridInput/GridInputForm.tsx';
 import { VARIATION_LABELS } from '../../analysis/variationLabels.ts';
 import type { GeometryPageViewModel, ReferenceSource } from './useGeometryPage.ts';
@@ -24,6 +25,8 @@ const NEIGHBOR_COUNT = 10;
 
 const GeometryScreen = ({
   isLoading,
+  isDrawsError,
+  onRetryDraws,
   hasEntries,
   source,
   onSourceChange,
@@ -51,6 +54,7 @@ const GeometryScreen = ({
     </p>
 
     {isLoading && <p>Chargement...</p>}
+    {isDrawsError && <DataLoadError onRetry={onRetryDraws} />}
 
     <div className={styles.sourceSelector} role="radiogroup" aria-label="Grille de référence">
       {(Object.keys(SOURCE_LABELS) as ReferenceSource[]).map((candidate) => (

@@ -1,6 +1,5 @@
 import { useMemo, useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { drawRepository } from '../../api/drawRepositoryInstance.ts';
+import { useDraws } from '../../hooks/useDraws.ts';
 import { useEvaluatedGrid } from '../../providers/EvaluatedGridContext.tsx';
 import type { GridVariation } from '../../analysis/generateVariations.ts';
 import { generateVariations } from '../../analysis/generateVariations.ts';
@@ -13,7 +12,6 @@ import { findNearestNeighbors } from '../../analysis/geometry/nearestNeighbors.t
 
 const DECADE_LABELS = ['1-10', '11-20', '21-30', '31-40', '41-50'];
 const NEIGHBOR_COUNT = 10;
-const EMPTY_DRAWS: Draw[] = [];
 
 export type ReferenceSource = 'latest' | 'evaluated' | 'custom';
 
@@ -47,6 +45,8 @@ interface DecadeHistogramBar {
 
 export interface GeometryPageViewModel {
   isLoading: boolean;
+  isDrawsError: boolean;
+  onRetryDraws: () => void;
   hasEntries: boolean;
   source: ReferenceSource;
   onSourceChange: (source: ReferenceSource) => void;
@@ -65,11 +65,7 @@ export interface GeometryPageViewModel {
 }
 
 export const useGeometryPage = (): GeometryPageViewModel => {
-  const drawsQuery = useQuery({
-    queryKey: ['draws', 'all'],
-    queryFn: () => drawRepository.getAll(),
-  });
-  const draws = drawsQuery.data ?? EMPTY_DRAWS;
+  const { draws, isLoading, isError: isDrawsError, refetch: onRetryDraws } = useDraws();
 
   const { evaluatedGrid } = useEvaluatedGrid();
 
@@ -161,7 +157,9 @@ export const useGeometryPage = (): GeometryPageViewModel => {
   }, [referenceGrid, draws]);
 
   return {
-    isLoading: drawsQuery.isLoading,
+    isLoading,
+    isDrawsError,
+    onRetryDraws,
     hasEntries: entries.length > 0,
     source,
     onSourceChange: setSource,

@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react';
 import { CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts';
+import DataLoadError from '../../components/dataLoadError/DataLoadError.tsx';
 import type { DiscoveryPageViewModel } from './useDiscoveryPage.ts';
 import styles from './DiscoveryPage.module.scss';
 
@@ -10,7 +11,13 @@ const colorForCluster = (clusterId: string): string => {
   return CLUSTER_COLORS[index];
 };
 
-const DiscoveryScreen = ({ isLoading, discovery, scatterSeriesByCluster }: DiscoveryPageViewModel) => (
+const DiscoveryScreen = ({
+  isLoading,
+  isDrawsError,
+  onRetryDraws,
+  discovery,
+  scatterSeriesByCluster,
+}: DiscoveryPageViewModel) => (
   <div className={styles.page}>
     <h1>Discovery Engine</h1>
     <p className={styles.note}>
@@ -20,6 +27,7 @@ const DiscoveryScreen = ({ isLoading, discovery, scatterSeriesByCluster }: Disco
     </p>
 
     {isLoading && <p>Chargement...</p>}
+    {isDrawsError && <DataLoadError onRetry={onRetryDraws} />}
 
     {discovery && (
       <>

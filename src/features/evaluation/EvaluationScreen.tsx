@@ -1,5 +1,6 @@
 import type { ReadingMatrixLabel } from '../../analysis/scoring/evaluateGrid.ts';
 import { VARIATION_DESCRIPTIONS, VARIATION_LABELS } from '../../analysis/variationLabels.ts';
+import DataLoadError from '../../components/dataLoadError/DataLoadError.tsx';
 import GridInputForm from '../../components/gridInput/GridInputForm.tsx';
 import type { EvaluationPageViewModel } from './useEvaluationPage.ts';
 import ScoreCard from './ScoreCard.tsx';
@@ -16,6 +17,8 @@ const EvaluationScreen = ({
   grid,
   onGridSubmit,
   isHistoryLoading,
+  isDrawsError,
+  onRetryDraws,
   scores,
   reading,
   exactMatch,
@@ -34,6 +37,7 @@ const EvaluationScreen = ({
     />
 
     {isHistoryLoading && <p>Chargement de l'historique...</p>}
+    {isDrawsError && <DataLoadError onRetry={onRetryDraws} />}
 
     {scores && reading && (
       <section data-testid="evaluation-results">

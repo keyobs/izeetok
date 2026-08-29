@@ -8,9 +8,20 @@ export const createCsvDrawRepository = (csvUrl: string = DEFAULT_CSV_URL): DrawR
   let cachedDraws: Promise<Draw[]> | null = null;
 
   const loadDraws = (): Promise<Draw[]> => {
-    cachedDraws ??= fetch(csvUrl)
-      .then((response) => response.text())
-      .then((csvText) => parseFdjCsv(csvText));
+    if (!cachedDraws) {
+      cachedDraws = fetch(csvUrl)
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Impossible de charger les tirages (HTTP ${response.status})`);
+          }
+          return response.text();
+        })
+        .then((csvText) => parseFdjCsv(csvText))
+        .catch((error: unknown) => {
+          cachedDraws = null;
+          throw error;
+        });
+    }
     return cachedDraws;
   };
 

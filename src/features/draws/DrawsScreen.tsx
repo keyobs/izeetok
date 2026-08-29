@@ -1,11 +1,21 @@
+import DataLoadError from '../../components/dataLoadError/DataLoadError.tsx';
 import type { DrawsPageViewModel } from './useDrawsPage.ts';
 import styles from './DrawsPage.module.scss';
 
-const DrawsScreen = ({ isLoading, hasData, rows, showAll, toggleShowAll }: DrawsPageViewModel) => (
+const DrawsScreen = ({
+  isLoading,
+  isDrawsError,
+  onRetryDraws,
+  hasData,
+  rows,
+  showAll,
+  toggleShowAll,
+}: DrawsPageViewModel) => (
   <div className={styles.page}>
     <h1>Tirages</h1>
 
     {isLoading && <p>Chargement...</p>}
+    {isDrawsError && <DataLoadError onRetry={onRetryDraws} />}
 
     {hasData && (
       <>

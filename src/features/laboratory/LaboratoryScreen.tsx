@@ -1,5 +1,6 @@
 import type { ChangeEvent } from 'react';
 import { TEMPORAL_WINDOWS } from '../../analysis/scoring/TemporalWindow.ts';
+import DataLoadError from '../../components/dataLoadError/DataLoadError.tsx';
 import ExperimentResults from './ExperimentResults.tsx';
 import { RULE_KINDS, RULE_LABELS, SCORING_KINDS } from './strategyFormRules.ts';
 import { windowLabel } from './windowLabel.ts';
@@ -7,6 +8,8 @@ import type { LaboratoryPageViewModel } from './useLaboratoryPage.ts';
 import styles from './LaboratoryPage.module.scss';
 
 const LaboratoryScreen = ({
+  isDrawsError,
+  onRetryDraws,
   strategyName,
   setStrategyName,
   seed,
@@ -33,6 +36,8 @@ const LaboratoryScreen = ({
     <p className={styles.intro}>
       Cette hypothèse fait-elle mieux qu'une stratégie de référence lorsqu'on la teste correctement ?
     </p>
+
+    {isDrawsError && <DataLoadError onRetry={onRetryDraws} />}
 
     <section className={styles.section} data-testid="strategy-builder">
       <h2>Construire une stratégie</h2>

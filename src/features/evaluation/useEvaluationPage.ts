@@ -1,16 +1,13 @@
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
 import type { Draw } from '../../analysis/draw/Draw.ts';
 import type { GridVariation } from '../../analysis/generateVariations.ts';
 import { generateVariations } from '../../analysis/generateVariations.ts';
-import { drawRepository } from '../../api/drawRepositoryInstance.ts';
+import { useDraws } from '../../hooks/useDraws.ts';
 import { useEvaluatedGrid } from '../../providers/EvaluatedGridContext.tsx';
 import type { Grid } from '../../analysis/grid/Grid.ts';
 import type { EvaluationScores, ReadingMatrixLabel } from '../../analysis/scoring/evaluateGrid.ts';
 import { classifyReading, evaluateGrid } from '../../analysis/scoring/evaluateGrid.ts';
 import { findExactMatch, findNumbersOnlyMatches } from '../../analysis/draw/findExactMatch.ts';
-
-const EMPTY_HISTORY: Draw[] = [];
 
 export interface EvaluationVariation extends GridVariation {
   scores: EvaluationScores;
@@ -20,6 +17,8 @@ export interface EvaluationPageViewModel {
   grid: Grid | null;
   onGridSubmit: (grid: Grid) => void;
   isHistoryLoading: boolean;
+  isDrawsError: boolean;
+  onRetryDraws: () => void;
   scores: EvaluationScores | null;
   reading: ReadingMatrixLabel | null;
   exactMatch: Draw | null;
@@ -31,11 +30,7 @@ export interface EvaluationPageViewModel {
 export const useEvaluationPage = (): EvaluationPageViewModel => {
   const { evaluatedGrid: grid, setEvaluatedGrid } = useEvaluatedGrid();
 
-  const historyQuery = useQuery({
-    queryKey: ['draws', 'all'],
-    queryFn: () => drawRepository.getAll(),
-  });
-  const history = historyQuery.data ?? EMPTY_HISTORY;
+  const { draws: history, isLoading: isHistoryLoading, isError: isDrawsError, refetch: onRetryDraws } = useDraws();
 
   const onGridSubmit = (submittedGrid: Grid) => {
     setEvaluatedGrid(submittedGrid);
@@ -76,7 +71,9 @@ export const useEvaluationPage = (): EvaluationPageViewModel => {
   return {
     grid,
     onGridSubmit,
-    isHistoryLoading: historyQuery.isLoading,
+    isHistoryLoading,
+    isDrawsError,
+    onRetryDraws,
     scores,
     reading,
     exactMatch,

@@ -1,16 +1,13 @@
 import { useState } from 'react';
 import type { Dispatch, SetStateAction } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { drawRepository } from '../../api/drawRepositoryInstance.ts';
+import { useDraws } from '../../hooks/useDraws.ts';
 import type { Experiment } from './runExperiment.ts';
 import { runExperiment } from './runExperiment.ts';
-import type { Draw } from '../../analysis/draw/Draw.ts';
 import type { TemporalWindow } from '../../analysis/scoring/TemporalWindow.ts';
 import type { Strategy } from '../../analysis/strategy/Strategy.ts';
 import { DEFAULT_RULES_STATE, RULE_KINDS, buildRulesFromState } from './strategyFormRules.ts';
 import type { RulesState } from './strategyFormRules.ts';
 
-const EMPTY_DRAWS: Draw[] = [];
 const DEFAULT_MONTE_CARLO_SAMPLES = 200;
 
 const downloadExperiment = (experiment: Experiment) => {
@@ -25,6 +22,8 @@ const downloadExperiment = (experiment: Experiment) => {
 
 export interface LaboratoryPageViewModel {
   isHistoryLoading: boolean;
+  isDrawsError: boolean;
+  onRetryDraws: () => void;
   strategyName: string;
   setStrategyName: Dispatch<SetStateAction<string>>;
   seed: number;
@@ -58,8 +57,7 @@ export const useLaboratoryPage = (): LaboratoryPageViewModel => {
   const [experiments, setExperiments] = useState<Experiment[]>([]);
   const [selectedExperimentId, setSelectedExperimentId] = useState<string | null>(null);
 
-  const historyQuery = useQuery({ queryKey: ['draws', 'all'], queryFn: () => drawRepository.getAll() });
-  const draws = historyQuery.data ?? EMPTY_DRAWS;
+  const { draws, isLoading: isHistoryLoading, isError: isDrawsError, refetch: onRetryDraws } = useDraws();
   const testPercent = 100 - trainPercent - validationPercent;
 
   const updateRule = (kind: (typeof RULE_KINDS)[number], patch: Partial<RulesState[typeof kind]>) => {
@@ -96,7 +94,9 @@ export const useLaboratoryPage = (): LaboratoryPageViewModel => {
   const selectedExperiment = experiments.find((experiment) => experiment.id === selectedExperimentId) ?? null;
 
   return {
-    isHistoryLoading: historyQuery.isLoading,
+    isHistoryLoading,
+    isDrawsError,
+    onRetryDraws,
     strategyName,
     setStrategyName,
     seed,
