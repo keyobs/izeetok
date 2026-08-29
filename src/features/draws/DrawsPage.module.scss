@@ -55,3 +55,20 @@
     font-family: var(--mono);
   }
 }
+
+.matched {
+  background: color-mix(in srgb, var(--accent-reference) 20%, transparent);
+  border-radius: var(--radius-sm);
+  padding: 0 0.2em;
+}
+
+.highlightToggle {
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  &[aria-pressed='true'] {
+    background: var(--accent-reference);
+  }
+}

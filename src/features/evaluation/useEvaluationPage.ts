@@ -15,7 +15,6 @@ export interface EvaluationVariation extends GridVariation {
 
 export interface EvaluationPageViewModel {
   grid: Grid | null;
-  onGridSubmit: (grid: Grid) => void;
   isHistoryLoading: boolean;
   isDrawsError: boolean;
   onRetryDraws: () => void;
@@ -28,13 +27,9 @@ export interface EvaluationPageViewModel {
 }
 
 export const useEvaluationPage = (): EvaluationPageViewModel => {
-  const { evaluatedGrid: grid, setEvaluatedGrid } = useEvaluatedGrid();
+  const { evaluatedGrid: grid } = useEvaluatedGrid();
 
   const { draws: history, isLoading: isHistoryLoading, isError: isDrawsError, refetch: onRetryDraws } = useDraws();
-
-  const onGridSubmit = (submittedGrid: Grid) => {
-    setEvaluatedGrid(submittedGrid);
-  };
 
   const scores = useMemo<EvaluationScores | null>(
     () => (grid && history.length > 0 ? evaluateGrid(grid, history) : null),
@@ -70,7 +65,6 @@ export const useEvaluationPage = (): EvaluationPageViewModel => {
 
   return {
     grid,
-    onGridSubmit,
     isHistoryLoading,
     isDrawsError,
     onRetryDraws,

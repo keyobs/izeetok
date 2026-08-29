@@ -2,6 +2,17 @@ import DataLoadError from '../../components/dataLoadError/DataLoadError.tsx';
 import type { DrawsPageViewModel } from './useDrawsPage.ts';
 import styles from './DrawsPage.module.scss';
 
+const highlightedCell = (values: readonly number[], highlightValues: readonly number[] | undefined) => (
+  <>
+    {values.map((value, index) => (
+      <span key={value} className={highlightValues?.includes(value) ? styles.matched : undefined}>
+        {index > 0 && ' · '}
+        {value}
+      </span>
+    ))}
+  </>
+);
+
 const DrawsScreen = ({
   isLoading,
   isDrawsError,
@@ -10,6 +21,10 @@ const DrawsScreen = ({
   rows,
   showAll,
   toggleShowAll,
+  isHighlightOn,
+  onToggleHighlight,
+  isHighlightAvailable,
+  highlightGrid,
 }: DrawsPageViewModel) => (
   <div className={styles.page}>
     <h1>Tirages</h1>
@@ -23,6 +38,17 @@ const DrawsScreen = ({
           {showAll ? `Historique complet (${rows.length} tirages)` : `${rows.length} derniers tirages`}
           <button type="button" onClick={toggleShowAll} data-testid="toggle-history">
             {showAll ? 'Voir les derniers tirages' : "Voir tout l'historique"}
+          </button>
+          <button
+            type="button"
+            className={styles.highlightToggle}
+            aria-pressed={isHighlightOn}
+            onClick={onToggleHighlight}
+            disabled={!isHighlightAvailable}
+            title={isHighlightAvailable ? undefined : 'Renseignez votre grille en haut de page pour activer le surlignage'}
+            data-testid="highlight-toggle"
+          >
+            {isHighlightOn ? 'Ne plus surligner ma grille' : 'Surligner ma grille'}
           </button>
         </p>
         <div className={styles.tableWrapper}>
@@ -43,8 +69,8 @@ const DrawsScreen = ({
               {rows.map((row) => (
                 <tr key={row.draw.id} data-testid="draw-row">
                   <td>{row.draw.date}</td>
-                  <td>{row.draw.numbers.join(' · ')}</td>
-                  <td>{row.draw.stars.join(' · ')}</td>
+                  <td>{highlightedCell(row.draw.numbers, highlightGrid?.numbers)}</td>
+                  <td>{highlightedCell(row.draw.stars, highlightGrid?.stars)}</td>
                   <td>{row.sum}</td>
                   <td>{row.range}</td>
                   <td>

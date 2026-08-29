@@ -1,6 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useDraws } from '../../hooks/useDraws.ts';
+import { useEvaluatedGrid } from '../../providers/EvaluatedGridContext.tsx';
 import type { Draw } from '../../analysis/draw/Draw.ts';
+import type { Grid } from '../../analysis/grid/Grid.ts';
 import { buildGeometryDescriptor } from '../../analysis/geometry/GeometryDescriptor.ts';
 import { computeGeometryDistance } from '../../analysis/geometry/GeometryDistance.ts';
 
@@ -51,12 +53,18 @@ export interface DrawsPageViewModel {
   rows: DrawRow[];
   showAll: boolean;
   toggleShowAll: () => void;
+  isHighlightOn: boolean;
+  onToggleHighlight: () => void;
+  isHighlightAvailable: boolean;
+  highlightGrid: Grid | null;
 }
 
 export const useDrawsPage = (): DrawsPageViewModel => {
   const [showAll, setShowAll] = useState(false);
+  const [isHighlightOn, setIsHighlightOn] = useState(false);
 
   const { draws, isLoading, isError: isDrawsError, refetch: onRetryDraws } = useDraws();
+  const { evaluatedGrid } = useEvaluatedGrid();
 
   const rows = useMemo(() => {
     const allRows = buildRowsMostRecentFirst(draws);
@@ -71,5 +79,9 @@ export const useDrawsPage = (): DrawsPageViewModel => {
     rows,
     showAll,
     toggleShowAll: () => setShowAll((previous) => !previous),
+    isHighlightOn,
+    onToggleHighlight: () => setIsHighlightOn((previous) => !previous),
+    isHighlightAvailable: Boolean(evaluatedGrid),
+    highlightGrid: isHighlightOn ? evaluatedGrid : null,
   };
 };

@@ -1,7 +1,6 @@
 import type { ReadingMatrixLabel } from '../../analysis/scoring/evaluateGrid.ts';
 import { VARIATION_DESCRIPTIONS, VARIATION_LABELS } from '../../analysis/variationLabels.ts';
 import DataLoadError from '../../components/dataLoadError/DataLoadError.tsx';
-import GridInputForm from '../../components/gridInput/GridInputForm.tsx';
 import type { EvaluationPageViewModel } from './useEvaluationPage.ts';
 import ScoreCard from './ScoreCard.tsx';
 import styles from './EvaluationPage.module.scss';
@@ -15,7 +14,6 @@ const READING_LABELS: Record<ReadingMatrixLabel, string> = {
 
 const EvaluationScreen = ({
   grid,
-  onGridSubmit,
   isHistoryLoading,
   isDrawsError,
   onRetryDraws,
@@ -29,15 +27,14 @@ const EvaluationScreen = ({
   <div className={styles.page}>
     <h1>Évaluation d'une grille</h1>
 
-    <GridInputForm
-      onSubmit={onGridSubmit}
-      submitLabel="Évaluer"
-      submitButtonTestId="evaluate-button"
-      initialGrid={grid}
-    />
-
     {isHistoryLoading && <p>Chargement de l'historique...</p>}
     {isDrawsError && <DataLoadError onRetry={onRetryDraws} />}
+
+    {!grid && (
+      <p className={styles.emptyHint} data-testid="no-grid-hint">
+        Renseignez votre grille en haut de page pour l'évaluer.
+      </p>
+    )}
 
     {scores && reading && (
       <section data-testid="evaluation-results">
