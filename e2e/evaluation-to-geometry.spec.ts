@@ -11,7 +11,7 @@ test('saisie -> évaluation -> géométrie', async ({ page }) => {
   for (const [index, value] of stars.entries()) {
     await page.getByTestId(`star-input-${index}`).fill(String(value));
   }
-  await page.getByTestId('evaluate-button').click();
+  await page.getByTestId('global-grid-submit').click();
 
   await expect(page.getByTestId('evaluation-results')).toBeVisible();
   await expect(page.getByTestId('score-card')).toHaveCount(4);

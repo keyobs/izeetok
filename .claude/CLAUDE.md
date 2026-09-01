@@ -166,16 +166,26 @@ fichiers le justifiera — ne pas inventer ces alias avant qu'ils existent réel
 ## Git workflow
 
 - Hébergé sur GitHub.
-- **Branches** : `main` protégée (aucun commit/push direct — bloqué par le hook `pre-commit` de
-  `dx-flow`), `develop` = branche de travail courante. Pas de branche par tâche par défaut ; on
-  crée une branche dédiée seulement si explicitement demandé.
-- **Commits** : autorisés — un commit conventionnel par tâche terminée, sur `develop`, sauf
-  instruction contraire. Format imposé par `commitlint.config.mjs` :
-  `type(scope): subject` (**scope obligatoire**). Types acceptés (insensibles à la casse) : `feat`,
-  `fix`, `doc`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore`, `core`, `revert`,
-  `merge`, `config`, `clean`.
-- **Push** : jamais sans autorisation explicite, même sur `develop`.
+- **Branches** : `main` protégée (aucun commit/push direct — bloquée à la fois par le hook
+  `pre-commit` de `dx-flow` et par la protection de branche GitHub, PR obligatoire), `develop` =
+  branche d'intégration. Chaque feature/fix se développe sur sa propre branche nommée `type/slug`
+  (ex : `feat/global-grid-form`), fusionnée dans `develop` via une PR GitHub.
+- **Merge des PR feature → develop** : "Create a merge commit" — jamais squash, jamais rebase.
+  L'historique de `develop` garde chaque commit individuel. Le commit de merge généré par GitHub
+  (`Merge pull request #N from ...`) porte le numéro de la PR, qui sert d'identifiant de suivi de
+  facto en l'absence d'outil de tickets : ce `#N` est référencé dans chaque entrée de
+  `CHANGELOG.md` (voir l'agent `release-manager`) plutôt que d'inventer un code parallèle.
+- **Commits** : un commit conventionnel par étape logique. Format imposé par
+  `commitlint.config.mjs` : `type(scope): subject` (**scope obligatoire**). Types acceptés
+  (insensibles à la casse) : `feat`, `fix`, `doc`, `style`, `refactor`, `perf`, `test`, `build`,
+  `ci`, `chore`, `core`, `revert`, `merge`, `config`, `clean`.
+- **Push** : jamais sans autorisation explicite.
+- **`develop → main`** : automatisé (`.github/workflows/deploy-develop-pages.yml`). Après un
+  déploiement vert sur `develop` (tests + E2E + build + déploiement GitHub Pages), une Action ouvre
+  ou met à jour une PR `develop → main` — titre ancré sur le dernier commit, corps listant tous les
+  commits inclus. Jamais auto-mergée : le passage en prod (Vercel, sur `main`) reste une décision
+  humaine.
 - Hooks `dx-flow` actifs : `pre-commit` (branche protégée, garde anti-`.env`, `lint-staged`,
   `tsc --noEmit` sur les fichiers staged), `commit-msg` (commitlint), `pre-push` (`lint:fix` puis
-  `test:run` — bloque le push vers `develop` si les tests échouent).
+  `test:run` — bloque le push si les tests échouent).
 

@@ -1,11 +1,11 @@
 import { Navigate, createBrowserRouter } from 'react-router';
 import AppLayout from './AppLayout.tsx';
-import EvaluationPage from '../pages/evaluation/EvaluationPage.tsx';
-import DrawsPage from '../pages/draws/DrawsPage.tsx';
-import GeometryPage from '../pages/geometry/GeometryPage.tsx';
-import LaboratoryPage from '../pages/laboratory/LaboratoryPage.tsx';
-import DiscoveryPage from '../pages/discovery/DiscoveryPage.tsx';
-import SpikePage from '../pages/spike/SpikePage.tsx';
+import EvaluationPage from '../features/evaluation/EvaluationPage.tsx';
+import DrawsPage from '../features/draws/DrawsPage.tsx';
+import GeometryPage from '../features/geometry/GeometryPage.tsx';
+import LaboratoryPage from '../features/laboratory/LaboratoryPage.tsx';
+import DiscoveryPage from '../features/discovery/DiscoveryPage.tsx';
+import SpikePage from '../sandbox/spike/SpikePage.tsx';
 
 export const router = createBrowserRouter(
   [

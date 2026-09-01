@@ -1,18 +1,23 @@
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet } from 'react-router';
+import { NavLink, Outlet, useLocation } from 'react-router';
+import ErrorBoundary from '../components/errorBoundary/ErrorBoundary.tsx';
+import GridInputForm from '../components/gridInput/GridInputForm.tsx';
+import { useEvaluatedGrid } from '../providers/EvaluatedGridContext.tsx';
 import styles from './AppLayout.module.scss';
 
 const NAV_ITEMS = [
   { to: '/evaluation', label: 'Évaluation' },
-  { to: '/draws', label: 'Tirages' },
   { to: '/geometry', label: 'Géométrie' },
   { to: '/laboratory', label: 'Laboratoire' },
   { to: '/discovery', label: 'Discovery' },
+  { to: '/draws', label: 'Tirages' },
 ];
 
 const AppLayout = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navRef = useRef<HTMLElement | null>(null);
+  const { pathname } = useLocation();
+  const { evaluatedGrid, setEvaluatedGrid } = useEvaluatedGrid();
 
   useEffect(() => {
     if (!isMenuOpen) return;
@@ -59,8 +64,18 @@ const AppLayout = () => {
           ))}
         </div>
       </nav>
+      <div className={styles.globalGridForm} data-testid="global-grid-form-wrapper">
+        <GridInputForm
+          onSubmit={setEvaluatedGrid}
+          submitLabel="Mettre à jour ma grille"
+          submitButtonTestId="global-grid-submit"
+          initialGrid={evaluatedGrid}
+        />
+      </div>
       <main className={styles.content} data-testid="app-content">
-        <Outlet />
+        <ErrorBoundary key={pathname}>
+          <Outlet />
+        </ErrorBoundary>
       </main>
       <footer className={styles.disclaimer} data-testid="non-predictive-disclaimer">
         Toutes les combinaisons EuroMillions valides ont la même probabilité théorique lors d'un

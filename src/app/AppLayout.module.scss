@@ -113,6 +113,16 @@
   }
 }
 
+.globalGridForm {
+  padding: var(--space-4) var(--space-7);
+  border-bottom: 1px solid var(--border);
+  background: var(--surface);
+
+  @media (max-width: 720px) {
+    padding: var(--space-4);
+  }
+}
+
 .content {
   flex: 1;
   padding: var(--space-6) var(--space-7);
