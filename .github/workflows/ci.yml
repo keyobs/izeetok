@@ -10,10 +10,6 @@ permissions:
 jobs:
   tests:
     name: Tests
-    # The develop -> main PR is opened/updated by deploy-develop-pages.yml only after that
-    # workflow's own test run already passed on the same commits - re-running them here on
-    # every sync of that specific PR would just duplicate a check that already happened.
-    if: ${{ !(github.head_ref == 'develop' && github.base_ref == 'main') }}
     uses: ./.github/workflows/test.yml
     with:
       ref: ${{ github.ref }}
