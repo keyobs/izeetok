@@ -2,9 +2,21 @@ import type { ChangeEvent } from 'react';
 import { TEMPORAL_WINDOWS } from '../../analysis/scoring/TemporalWindow.ts';
 import DataLoadError from '../../components/dataLoadError/DataLoadError.tsx';
 import ExperimentResults from './ExperimentResults.tsx';
-import { RULE_DESCRIPTIONS, RULE_KINDS, RULE_LABELS, SCORING_KINDS } from './strategyFormRules.ts';
+import {
+  ODD_COUNT_MAX,
+  ODD_COUNT_MIN,
+  RULE_DESCRIPTIONS,
+  RULE_KINDS,
+  RULE_LABELS,
+  SCORING_KINDS,
+  SUM_MAX,
+  SUM_MIN,
+  WEIGHT_MAX,
+  WEIGHT_MIN,
+} from './strategyFormRules.ts';
 import { windowLabel } from './windowLabel.ts';
 import type { LaboratoryPageViewModel } from './useLaboratoryPage.ts';
+import { MONTE_CARLO_MAX, MONTE_CARLO_MIN, PERCENT_MAX, PERCENT_MIN, SEED_MAX, SEED_MIN } from './useLaboratoryPage.ts';
 import styles from './LaboratoryPage.module.scss';
 
 const LaboratoryScreen = ({
@@ -13,18 +25,18 @@ const LaboratoryScreen = ({
   strategyName,
   setStrategyName,
   seed,
-  setSeed,
+  onSeedChange,
   rulesState,
   updateRule,
   trainPercent,
-  setTrainPercent,
+  onTrainPercentChange,
   validationPercent,
-  setValidationPercent,
+  onValidationPercentChange,
   testPercent,
   selectedWindows,
   toggleWindow,
   monteCarloSampleCount,
-  setMonteCarloSampleCount,
+  onMonteCarloSampleCountChange,
   experiments,
   selectedExperiment,
   onSelectExperiment,
@@ -62,8 +74,11 @@ const LaboratoryScreen = ({
           <br />
           <input
             type="number"
+            min={SEED_MIN}
+            max={SEED_MAX}
+            step={1}
             value={seed}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => setSeed(Number(event.target.value))}
+            onChange={(event: ChangeEvent<HTMLInputElement>) => onSeedChange(event.target.value)}
             data-testid="seed-input"
           />
         </label>
@@ -96,9 +111,11 @@ const LaboratoryScreen = ({
                 {config.enabled && SCORING_KINDS.includes(kind) && (
                   <input
                     type="number"
-                    step={0.1}
+                    min={WEIGHT_MIN}
+                    max={WEIGHT_MAX}
+                    step={1}
                     value={config.weight}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => updateRule(kind, { weight: Number(event.target.value) })}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => updateRule(kind, { weight: event.target.value })}
                     aria-label={`Poids - ${RULE_LABELS[kind]}`}
                     data-testid={`rule-weight-${kind}`}
                   />
@@ -107,14 +124,20 @@ const LaboratoryScreen = ({
                   <>
                     <input
                       type="number"
+                      min={SUM_MIN}
+                      max={SUM_MAX}
+                      step={1}
                       value={config.min}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => updateRule(kind, { min: Number(event.target.value) })}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => updateRule(kind, { min: event.target.value })}
                       aria-label="Somme minimum"
                     />
                     <input
                       type="number"
+                      min={SUM_MIN}
+                      max={SUM_MAX}
+                      step={1}
                       value={config.max}
-                      onChange={(event: ChangeEvent<HTMLInputElement>) => updateRule(kind, { max: Number(event.target.value) })}
+                      onChange={(event: ChangeEvent<HTMLInputElement>) => updateRule(kind, { max: event.target.value })}
                       aria-label="Somme maximum"
                     />
                   </>
@@ -122,10 +145,11 @@ const LaboratoryScreen = ({
                 {config.enabled && kind === 'parity-target' && (
                   <input
                     type="number"
-                    min={0}
-                    max={5}
+                    min={ODD_COUNT_MIN}
+                    max={ODD_COUNT_MAX}
+                    step={1}
                     value={config.oddCount}
-                    onChange={(event: ChangeEvent<HTMLInputElement>) => updateRule(kind, { oddCount: Number(event.target.value) })}
+                    onChange={(event: ChangeEvent<HTMLInputElement>) => updateRule(kind, { oddCount: event.target.value })}
                     aria-label="Nombre de numéros impairs souhaité"
                   />
                 )}
@@ -145,8 +169,11 @@ const LaboratoryScreen = ({
           <br />
           <input
             type="number"
+            min={PERCENT_MIN}
+            max={PERCENT_MAX}
+            step={1}
             value={trainPercent}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => setTrainPercent(Number(event.target.value))}
+            onChange={(event: ChangeEvent<HTMLInputElement>) => onTrainPercentChange(event.target.value)}
             data-testid="train-percent-input"
           />
         </label>
@@ -155,8 +182,11 @@ const LaboratoryScreen = ({
           <br />
           <input
             type="number"
+            min={PERCENT_MIN}
+            max={PERCENT_MAX}
+            step={1}
             value={validationPercent}
-            onChange={(event: ChangeEvent<HTMLInputElement>) => setValidationPercent(Number(event.target.value))}
+            onChange={(event: ChangeEvent<HTMLInputElement>) => onValidationPercentChange(event.target.value)}
             data-testid="validation-percent-input"
           />
         </label>
@@ -185,8 +215,11 @@ const LaboratoryScreen = ({
         <br />
         <input
           type="number"
+          min={MONTE_CARLO_MIN}
+          max={MONTE_CARLO_MAX}
+          step={1}
           value={monteCarloSampleCount}
-          onChange={(event: ChangeEvent<HTMLInputElement>) => setMonteCarloSampleCount(Number(event.target.value))}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => onMonteCarloSampleCountChange(event.target.value)}
           data-testid="monte-carlo-samples-input"
         />
       </label>
