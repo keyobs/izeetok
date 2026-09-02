@@ -40,6 +40,20 @@ export const RULE_LABELS: Record<StrategyRuleKind, string> = {
   'star-frequency': 'Fréquence des étoiles',
 };
 
+export const RULE_DESCRIPTIONS: Record<StrategyRuleKind, string> = {
+  'number-frequency':
+    "Favorise les numéros les plus sortis dans l'historique. Poids négatif : favorise au contraire les numéros les moins sortis.",
+  'above-31': 'Donne un bonus fixe à tous les numéros supérieurs à 31, sans regarder leur historique.',
+  'repeat-from-previous': 'Favorise les numéros présents dans le tout dernier tirage enregistré.',
+  recency:
+    "Favorise les numéros sortis récemment. Poids négatif : favorise au contraire les numéros absents depuis longtemps (\"en retard\").",
+  'decade-spread':
+    'Répartit les 5 numéros sur des dizaines différentes (1-10, 11-20, ... 41-50) plutôt que de les laisser se concentrer.',
+  'sum-range': 'Remplace des numéros jusqu\'à ce que la somme des 5 numéros tombe dans la plage choisie.',
+  'parity-target': 'Remplace des numéros jusqu\'à atteindre le nombre de numéros impairs souhaité.',
+  'star-frequency': "Favorise les étoiles les plus sorties dans l'historique.",
+};
+
 export const DEFAULT_RULES_STATE: RulesState = {
   'number-frequency': { enabled: true, weight: 1 },
   'above-31': { enabled: false, weight: 1 },
