@@ -54,6 +54,7 @@ jobs:
       - name: Build
         env:
           VITE_BASE_PATH: "/izeetok/"
+          PULSEPIT_ENV: "staging"
         run: pnpm build
 
       - name: SPA fallback for GitHub Pages (no server-side rewrites there)

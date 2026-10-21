@@ -9,7 +9,7 @@
   },
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc -b && vite build && node scripts/generateBeacon.mjs",
     "lint": "oxlint",
     "preview": "vite preview",
     "prepare": "husky",
@@ -40,6 +40,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@keyobs/pulsepit-beacon": "0.1.1",
     "@commitlint/cli": "^21.2.1",
     "@commitlint/config-conventional": "^21.2.0",
     "@keyobs/dx-flow": "3.1.3",
