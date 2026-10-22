@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "remote": "origin",
+  "default": {
+    "directPush": "unknown",
+    "requiredChecks": null
+  },
+  "branches": {
+    "main": {
+      "directPush": "forbidden",
+      "requiredChecks": []
+    },
+    "master": {
+      "directPush": "forbidden",
+      "requiredChecks": []
+    },
+    "develop": {
+      "directPush": "allowed",
+      "requiredChecks": [
+        "lint-fix",
+        "test-run"
+      ]
+    }
+  }
+}
