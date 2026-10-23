@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { execFileSync, spawnSync } from 'node:child_process';
-import { createHash } from 'node:crypto';
+import { createHash, createPublicKey, verify } from 'node:crypto';
 import {
   closeSync,
   constants,
@@ -9,6 +9,8 @@ import {
   openSync,
   readFileSync,
   readSync,
+  realpathSync,
+  unlinkSync,
   writeSync,
 } from 'node:fs';
 import { resolve } from 'node:path';
@@ -23,8 +25,10 @@ function printInfo(message) {
 const limit = 64 * 1024;
 const scripts = { 'lint-fix': 'lint:fix', 'test-run': 'test:run' };
 class PushPolicyError extends Error {}
-function reject(message) {
-  throw new PushPolicyError(message);
+function reject(message, code = 'INVALID_PUSH_POLICY') {
+  const error = new PushPolicyError(message);
+  error.code = code;
+  throw error;
 }
 function git(...args) {
   return execFileSync('git', args, {
@@ -150,12 +154,72 @@ function parseUpdates(input) {
         reject('Invalid pre-push object input.');
       try {
         git('check-ref-format', remoteRef);
-        if (localRef !== '(delete)') git('check-ref-format', localRef);
+        if (
+          localRef !== '(delete)' &&
+          !(process.env.PULSEPIT_CHECKS_PROOF && localRef === oid)
+        )
+          git('check-ref-format', localRef);
       } catch {
         reject('Unsupported pre-push reference.');
       }
       return { localRef, oid, remoteRef };
     });
+}
+function verifiedProof(initial, updates, required) {
+  const path = process.env.PULSEPIT_CHECKS_PROOF;
+  const publicKey = process.env.PULSEPIT_CHECKS_PUBLIC_KEY;
+  if (!path && !publicKey) return null;
+  if (!path || !publicKey)
+    reject('Incomplete check proof.', 'CHECK_CONTEXT_MISMATCH');
+  let envelope;
+  const stat = lstatSync(path);
+  if (!stat.isFile() || stat.isSymbolicLink() || stat.size > limit)
+    reject('Invalid check proof.', 'CHECK_CONTEXT_MISMATCH');
+  const fd = openSync(path, constants.O_RDONLY | (constants.O_NOFOLLOW ?? 0));
+  try {
+    envelope = JSON.parse(boundedRead(fd));
+  } finally {
+    closeSync(fd);
+  }
+  const key = createPublicKey({
+    key: Buffer.from(publicKey, 'base64'),
+    format: 'der',
+    type: 'spki',
+  });
+  if (
+    typeof envelope.body !== 'string' ||
+    typeof envelope.signature !== 'string' ||
+    !verify(
+      null,
+      Buffer.from(envelope.body),
+      key,
+      Buffer.from(envelope.signature, 'base64'),
+    )
+  )
+    reject('Unverified check proof.', 'CHECK_CONTEXT_MISMATCH');
+  const proof = JSON.parse(envelope.body);
+  if (
+    proof.version !== 1 ||
+    proof.path !== realpathSync('.') ||
+    proof.policyDigest !== initial.digest ||
+    !Number.isSafeInteger(proof.expiresAt) ||
+    proof.expiresAt <= Date.now() ||
+    proof.expiresAt > Date.now() + 60_000 ||
+    updates.length !== 1 ||
+    required.size === 0
+  )
+    reject('Stale or unrelated check proof.', 'CHECK_CONTEXT_MISMATCH');
+  const update = updates[0];
+  if (
+    update.remoteRef !== proof.ref ||
+    update.oid !== proof.commit ||
+    ![proof.ref, proof.commit].includes(update.localRef)
+  )
+    reject(
+      'The check proof targets another commit or branch.',
+      'CHECK_CONTEXT_MISMATCH',
+    );
+  return { ...proof, path };
 }
 function packageManager() {
   for (const [file, command, prefix] of [
@@ -179,7 +243,7 @@ function runScript(manager, script) {
   });
   return result.status === 0 && !result.error && !result.signal;
 }
-export function runPrePush(remote, input) {
+export function runPrePush(remote, input, report = () => {}) {
   const initial = declaration();
   if (remote !== initial.policy.remote)
     reject('No push policy is declared for this remote.');
@@ -206,8 +270,12 @@ export function runPrePush(remote, input) {
     manifest.scripts[name].trim().length > 0;
   for (const id of required) {
     if (!Object.hasOwn(scripts, id) || !hasScript(scripts[id]))
-      reject('A required check has no supported package script.');
+      reject(
+        'A required check has no supported package script.',
+        'CHECK_RUNNER_UNAVAILABLE',
+      );
   }
+  const proof = verifiedProof(initial, updates, required);
   let context;
   function verifyContext() {
     if (!context) return;
@@ -218,6 +286,7 @@ export function runPrePush(remote, input) {
     )
       reject(
         'The tested commit or working tree changed. Review and commit changes before pushing.',
+        'CHECK_CONTEXT_MISMATCH',
       );
   }
   if (checkedUpdates.length) {
@@ -228,39 +297,94 @@ export function runPrePush(remote, input) {
     if (
       checkedUpdates.some(
         (update) =>
-          update.localRef !== context.ref || update.oid !== context.oid,
+          (update.localRef !== context.ref &&
+            !(proof && update.localRef === context.oid)) ||
+          update.oid !== context.oid,
       )
     )
       reject(
         'Required checks must run on the current branch and pushed commit.',
+        'CHECK_CONTEXT_MISMATCH',
       );
     verifyContext();
+  }
+  if (proof) {
+    if (context.ref !== proof.ref || context.oid !== proof.commit)
+      reject('The checked branch context changed.', 'CHECK_CONTEXT_MISMATCH');
+    verifyContext();
+    unlinkSync(proof.path);
+    printInfo('Reusing verified checks for this commit.');
+    return {
+      commit: context.oid,
+      ref: context.ref,
+      policyDigest: initial.digest,
+    };
   }
   const manager = packageManager();
   if (hasScript('lint:fix')) {
     printInfo('Running lint fix before push...');
-    if (!runScript(manager, 'lint:fix')) reject('Lint failed. Push aborted.');
+    report({ checkId: 'lint-fix', status: 'running', required: true });
+    const passed = runScript(manager, 'lint:fix');
+    report({
+      checkId: 'lint-fix',
+      status: passed ? 'passed' : 'failed',
+      required: true,
+    });
+    if (!passed) reject('Lint failed. Push aborted.', 'CHECK_FAILED');
     verifyContext();
   }
   if (hasScript('test:run')) {
     printInfo('Running tests before push...');
-    if (!runScript(manager, 'test:run')) {
+    report({
+      checkId: 'test-run',
+      status: 'running',
+      required: required.has('test-run'),
+    });
+    const passed = runScript(manager, 'test:run');
+    report({
+      checkId: 'test-run',
+      status: passed ? 'passed' : 'failed',
+      required: required.has('test-run'),
+    });
+    if (!passed) {
       if (required.has('test-run'))
-        reject('Required tests failed. Push aborted.');
+        reject('Required tests failed. Push aborted.', 'CHECK_FAILED');
       printError('Tests failed; this branch has no mandatory test check.');
     }
   }
   verifyContext();
   if (declaration().digest !== initial.digest)
-    reject('The push policy changed during checks. Retry after reviewing it.');
+    reject(
+      'The push policy changed during checks. Retry after reviewing it.',
+      'CHECK_CONTEXT_MISMATCH',
+    );
+  return context
+    ? { commit: context.oid, ref: context.ref, policyDigest: initial.digest }
+    : null;
 }
 if (
   process.argv[1] &&
   resolve(process.argv[1]) === fileURLToPath(import.meta.url)
 ) {
+  const reporting = process.argv[2] === '--report-checks';
+  const report = reporting
+    ? (event) => writeSync(3, `${JSON.stringify(event)}\n`)
+    : () => {};
   try {
-    runPrePush(process.argv[2], boundedRead(0));
+    const evidence = runPrePush(
+      process.argv[reporting ? 3 : 2],
+      boundedRead(0),
+      report,
+    );
+    report({ status: 'succeeded', evidence });
   } catch (error) {
+    if (process.env.PULSEPIT_CHECKS_PROOF && error instanceof PushPolicyError)
+      printError(`PULSEPIT_CHECK_ERROR ${error.code}`);
+    report({
+      status: 'failed',
+      code:
+        error instanceof PushPolicyError ? error.code : 'INVALID_PUSH_POLICY',
+    });
     printError(
       error instanceof PushPolicyError
         ? error.message
